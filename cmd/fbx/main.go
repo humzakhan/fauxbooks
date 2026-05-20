@@ -88,15 +88,19 @@ func runGen(args []string) int {
 	}
 
 	// Step 2: check all invariants before writing any files.
+	// Stress bundles (recon-stress-test) deliberately inject invariant violations;
+	// skip the check when Truth is non-nil (set only by InjectStress in gen.Run).
 	// On invariant failure: print the violation and exit 2; nothing is written.
-	if err := invariant.Check(ds); err != nil {
-		var ie gen.InvariantError
-		if errors.As(err, &ie) {
-			fmt.Fprintf(os.Stderr, "fbx: invariant %d violated: %s\n", ie.Invariant, ie.Detail)
-		} else {
-			fmt.Fprintf(os.Stderr, "fbx: invariant check failed: %v\n", err)
+	if ds.Truth == nil {
+		if err := invariant.Check(ds); err != nil {
+			var ie gen.InvariantError
+			if errors.As(err, &ie) {
+				fmt.Fprintf(os.Stderr, "fbx: invariant %d violated: %s\n", ie.Invariant, ie.Detail)
+			} else {
+				fmt.Fprintf(os.Stderr, "fbx: invariant check failed: %v\n", err)
+			}
+			return 2
 		}
-		return 2
 	}
 
 	// Step 3: write all output files.
