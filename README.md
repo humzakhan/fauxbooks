@@ -331,10 +331,13 @@ go test ./... -run TestGolden -update
 
 ## Documentation
 
-| Path | Contents |
-|---|---|
-| `architecture/OVERVIEW.md` | Canonical CLI spec: flags, exit codes, output format, invariants. |
-| `architecture/architecture.md` | Internal design: packages, pipeline, type definitions. |
-| `docs/thesis.md` | Problem statement and design rationale. |
-| `docs/product.md` | Product spec and audience. |
-| `plans/roadmap.md` | v0.2+ planned features and out-of-scope items. |
+| Path | Audience | Contents |
+|---|---|---|
+| [`docs/usage.md`](docs/usage.md) | Users and tool-calling agents | Complete CLI/MCP reference: flags, output files, formats, bundles, YAML schemas, exit codes, examples. |
+| [`AGENTS.md`](AGENTS.md) | Developer agents (Codex, Cursor, Claude Code, etc.) | Developer entry point: invariants, package layout, test workflow, pointers to specs. |
+| [`CLAUDE.md`](CLAUDE.md) | Claude Code specifically | Claude-specific notes: orchestrator pattern, skill list, CI policy. |
+| [`architecture/OVERVIEW.md`](architecture/OVERVIEW.md) | Developers | Canonical spec: stack, 5 invariants, CLI, output format, determinism model. |
+| [`architecture/architecture.md`](architecture/architecture.md) | Developers | Internal design: packages, pipeline, key types. |
+| [`docs/thesis.md`](docs/thesis.md) | All | Problem statement and design rationale. |
+| [`docs/product.md`](docs/product.md) | All | Product spec and audience. |
+| [`plans/roadmap.md`](plans/roadmap.md) | Developers | v0.3+ planned features and out-of-scope items. |
