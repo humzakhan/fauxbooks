@@ -7,6 +7,10 @@
   "version": "",
   "row_counts": [
     {
+      "name": "balance-sheet.csv",
+      "count": 12
+    },
+    {
       "name": "bank_statement.csv",
       "count": 99
     },
@@ -17,6 +21,10 @@
     {
       "name": "bills.csv",
       "count": 22
+    },
+    {
+      "name": "cash-flow.csv",
+      "count": 7
     },
     {
       "name": "coa.csv",
@@ -47,11 +55,23 @@
       "count": 150
     },
     {
+      "name": "profit-loss.csv",
+      "count": 11
+    },
+    {
+      "name": "trial-balance.csv",
+      "count": 15
+    },
+    {
       "name": "vendors.csv",
       "count": 10
     }
   ],
   "file_sha256": [
+    {
+      "name": "balance-sheet.csv",
+      "sha256": "7fd4d8457f98769662c36721e38442d90b0413f4f0572a491a48da0cd6c892f5"
+    },
     {
       "name": "bank_statement.csv",
       "sha256": "d5f470d7d0b630499af1f9e6a8011cf5960b26b36644013065ac2159747b2bc1"
@@ -63,6 +83,10 @@
     {
       "name": "bills.csv",
       "sha256": "a69507333fb433ce2814330605718fe5875e43426bd7b705838ca7fcbf98b3f4"
+    },
+    {
+      "name": "cash-flow.csv",
+      "sha256": "d4abf4e1bd3f5b098dc05b78c36305e5293890d9e1934cc439aff97d5a657967"
     },
     {
       "name": "coa.csv",
@@ -91,6 +115,14 @@
     {
       "name": "journal_entries.csv",
       "sha256": "166ef5f4db334a793479022d3987dcca023014ad6fc159c54cc065733b388c88"
+    },
+    {
+      "name": "profit-loss.csv",
+      "sha256": "80b3f4bce8755a69d5024a10f0ce45d1ca5e3ebdd87ffbd6c57469c595d9f119"
+    },
+    {
+      "name": "trial-balance.csv",
+      "sha256": "eb1d8a67a7662b1db5b70cc3d7283650c71ef3563e02cc70d813ab0c1c17e7c8"
     },
     {
       "name": "vendors.csv",

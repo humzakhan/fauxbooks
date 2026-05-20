@@ -1,0 +1,12 @@
+section,account_code,account_name,amount
+revenue,4000,Sales Revenue,63680.410000000
+revenue,4200,Interest Income,25961.940000000
+total_revenue,,,89642.350000000
+expense,5000,Cost of Goods Sold,34830.390000000
+expense,5100,Salaries and Wages Expense,52352.350000000
+expense,5110,Payroll Tax Expense,4004.954775000
+expense,5300,Travel and Entertainment Expense,30112.710000000
+expense,5400,Depreciation Expense,27668.700000000
+expense,5900,Other Operating Expenses,95389.990000000
+total_expense,,,244359.094775000
+net_income,,,-154716.744775000

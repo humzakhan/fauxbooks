@@ -19,6 +19,7 @@ import (
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
 	"github.com/humzakhan/fauxbooks/internal/invariant"
+	"github.com/humzakhan/fauxbooks/internal/report"
 	"github.com/humzakhan/fauxbooks/internal/writer"
 )
 
@@ -112,8 +113,12 @@ func runGen(args []string) int {
 		}
 	}
 
-	// Step 3: write all output files.
-	if err := writer.Write(ds, cfg, cfg.OutDir); err != nil {
+	// Step 3: derive period reports from the validated dataset. Compute is a
+	// pure function — no RNG, no wall-clock, no I/O — so it cannot fail.
+	reports := report.Compute(ds)
+
+	// Step 4: write all output files.
+	if err := writer.Write(ds, reports, cfg, cfg.OutDir); err != nil {
 		fmt.Fprintf(os.Stderr, "fbx: write failed: %v\n", err)
 		return 2
 	}

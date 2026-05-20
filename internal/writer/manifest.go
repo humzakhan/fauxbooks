@@ -12,6 +12,7 @@ import (
 	"sort"
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
+	"github.com/humzakhan/fauxbooks/internal/report"
 )
 
 // fileHash records the SHA-256 digest for one output file.
@@ -88,10 +89,10 @@ func writeFile(outDir, name string, fn func(io.Writer) (int, error)) (rowCount i
 	return rowCount, hexHash, nil
 }
 
-// Write orchestrates writing all output files for ds into outDir, accumulates
-// SHA-256 per file during the write pass, then writes manifest.json last.
-// Returns an error if any file write fails.
-func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
+// Write orchestrates writing all output files for ds and reports into outDir,
+// accumulates SHA-256 per file during the write pass, then writes manifest.json
+// last. Returns an error if any file write fails.
+func Write(ds gen.Dataset, reports report.Reports, cfg gen.Config, outDir string) error {
 	type fileSpec struct {
 		name string
 		fn   func(io.Writer) (int, error)
@@ -140,6 +141,18 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 			{"expense_reports.jsonl", func(w io.Writer) (int, error) {
 				return WriteExpenseReportsJSONL(w, ds.SubLedger.ExpenseReports)
 			}},
+			{"profit-loss.jsonl", func(w io.Writer) (int, error) {
+				return WriteProfitLossJSONL(w, reports.ProfitLoss)
+			}},
+			{"balance-sheet.jsonl", func(w io.Writer) (int, error) {
+				return WriteBalanceSheetJSONL(w, reports.BalanceSheet)
+			}},
+			{"cash-flow.jsonl", func(w io.Writer) (int, error) {
+				return WriteCashFlowJSONL(w, reports.CashFlow)
+			}},
+			{"trial-balance.jsonl", func(w io.Writer) (int, error) {
+				return WriteTrialBalanceJSONL(w, reports.TrialBalance)
+			}},
 		}
 	} else {
 		// Default: CSV.
@@ -176,6 +189,18 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 			}},
 			{"expense_reports.csv", func(w io.Writer) (int, error) {
 				return WriteExpenseReports(w, ds.SubLedger.ExpenseReports)
+			}},
+			{"profit-loss.csv", func(w io.Writer) (int, error) {
+				return WriteProfitLoss(w, reports.ProfitLoss)
+			}},
+			{"balance-sheet.csv", func(w io.Writer) (int, error) {
+				return WriteBalanceSheet(w, reports.BalanceSheet)
+			}},
+			{"cash-flow.csv", func(w io.Writer) (int, error) {
+				return WriteCashFlow(w, reports.CashFlow)
+			}},
+			{"trial-balance.csv", func(w io.Writer) (int, error) {
+				return WriteTrialBalance(w, reports.TrialBalance)
 			}},
 		}
 	}
