@@ -4,7 +4,9 @@ go 1.24.0
 
 require (
 	github.com/brianvoe/gofakeit/v7 v7.15.0
+	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/shopspring/decimal v1.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
