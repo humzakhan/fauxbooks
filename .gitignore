@@ -1,0 +1,10 @@
+.DS_Store
+*.swp
+.idea/
+.vscode/
+*.log
+# Build artifacts
+/dist/
+/bin/
+*.test
+*.out
