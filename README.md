@@ -65,6 +65,8 @@ PR-V04 adds `--format pdf` which renders the eight financial report documents (P
 
 PR-V05 adds `fbx verify <dir>`: reads CSV files from an existing `fbx gen` output directory, reconstructs an in-memory dataset, runs all four invariants, and exits 0 on pass or 2 on failure. Introduces the new `internal/reader` package (`Load(dir string) (gen.Dataset, error)`). Exit 1 on I/O or parse error; exit 2 on any invariant violation (detail printed to stderr including the invariant number and offending entry ID). Verifying `recon-stress-test` output exits 2 by design — the deliberately injected anomalies violate invariant 3.
 
+PR-V06 adds `fbx convert --in <path> --out <path>`: converts a single file between CSV, XLSX, and JSONL formats. Format is detected from the file extension. All six conversion directions are supported (CSV↔XLSX, CSV↔JSONL, XLSX↔JSONL). Streaming throughout — O(1) memory per row. Decimal strings are never parsed through `float64`: JSONL values use `json.RawMessage`, XLSX cells use excelize's string-value API. JSONL → XLSX column order is stabilised by sorting the keys from the first JSON line. XLSX output timestamps are not pinned (convert is not subject to the byte-determinism requirement; use `fbx gen --format xlsx` when deterministic XLSX is needed).
+
 ### `fbx verify <dir>`
 
 ```
@@ -78,6 +80,31 @@ Reads the CSV output in `<dir>` and re-runs invariant checks. Exit codes:
 | `0` | All invariants pass — dataset is consistent. |
 | `1` | I/O or parse error (directory not found, required CSV missing, malformed decimal). |
 | `2` | At least one invariant violated — detail printed to stderr with invariant number and entry ID. |
+
+### `fbx convert`
+
+```
+fbx convert --in <source> --out <destination>
+```
+
+Converts a single file between supported formats. Format is detected from the file extension.
+
+| Flag | Required | Description |
+|---|---|---|
+| `--in` | yes | Source file path. Extension must be `.csv`, `.xlsx`, or `.jsonl`. |
+| `--out` | yes | Destination file path. Extension must be `.csv`, `.xlsx`, or `.jsonl`. |
+
+**Supported conversion pairs:** CSV↔XLSX, CSV↔JSONL, XLSX↔JSONL (all six directions).
+
+**Exit codes:**
+
+| Code | Condition |
+|---|---|
+| `0` | Conversion succeeded. |
+| `1` | Configuration error: missing flag, unsupported extension, or same-format (no-op) conversion. |
+| `2` | I/O error during conversion. |
+
+**Decimal preservation:** all decimal strings survive any conversion path unchanged. Values are never routed through `float64`. JSONL → XLSX column order is alphabetically sorted from the first line's keys and fixed for all subsequent rows.
 
 ## Bundles
 
