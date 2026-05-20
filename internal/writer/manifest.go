@@ -80,7 +80,7 @@ func writeFile(outDir, name string, fn func(io.Writer) (int, error)) (rowCount i
 		return 0, "", fmt.Errorf("write %s: %w", name, err)
 	}
 
-	// Flush bw so all buffered bytes are hashed before sum() is called.
+	// Flush so all buffered bytes reach the underlying file before Close.
 	if ferr := bw.Flush(); ferr != nil {
 		return 0, "", fmt.Errorf("flush %s: %w", name, ferr)
 	}
