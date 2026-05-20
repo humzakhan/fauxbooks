@@ -1,0 +1,11 @@
+name: tiny-test
+stress_test: false
+event_mix:
+  sale_invoice: 5
+  vendor_bill: 5
+  customer_payment: 3
+  bill_payment: 3
+volume_scale:
+  small: 10
+  medium: 50
+  large: 100

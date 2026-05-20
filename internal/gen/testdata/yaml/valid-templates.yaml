@@ -1,0 +1,11 @@
+templates:
+  - event_type: sale_invoice
+    debit_account: "1100"
+    credit_account: "4000"
+    amount_field: amount
+    description: "Custom sale invoice"
+  - event_type: vendor_bill
+    debit_account: "5900"
+    credit_account: "2000"
+    amount_field: amount
+    description: "Custom vendor bill"

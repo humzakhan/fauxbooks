@@ -132,7 +132,13 @@ func Generate(rng *RNG, period time.Time, volume string, mix EventMix) ([]Event,
 		// can use errors.Is(err, ErrUnknownVolume) regardless of call site.
 		return nil, fmt.Errorf("%w: %s", ErrUnknownVolume, volume)
 	}
+	return generateWithCount(rng, period, count, mix)
+}
 
+// generateWithCount produces exactly count events using the given mix.
+// It is the shared core of Generate (volume-tier path) and the YAML-bundle
+// volume-scale path in runWithBundle. RNG call order is identical in both paths.
+func generateWithCount(rng *RNG, period time.Time, count int, mix EventMix) ([]Event, error) {
 	// Build a parallel pair of (type, weight) slices from allEventTypes so the
 	// iteration order is deterministic (allEventTypes is a fixed slice, not a map).
 	types := make([]EventType, 0, len(allEventTypes))
