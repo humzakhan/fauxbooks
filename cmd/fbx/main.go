@@ -20,6 +20,7 @@ import (
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
 	"github.com/humzakhan/fauxbooks/internal/invariant"
+	"github.com/humzakhan/fauxbooks/internal/reader"
 	"github.com/humzakhan/fauxbooks/internal/report"
 	"github.com/humzakhan/fauxbooks/internal/writer"
 )
@@ -44,6 +45,8 @@ func run(args []string) int {
 	switch args[0] {
 	case "gen":
 		return runGen(args[1:])
+	case "verify":
+		return runVerify(args[1:])
 	case "version":
 		fmt.Println(Version)
 		return 0
@@ -51,6 +54,41 @@ func run(args []string) int {
 		fmt.Fprintf(os.Stderr, "fbx: unknown subcommand %q\n", args[0])
 		return 1
 	}
+}
+
+// runVerify handles the "fbx verify <dir>" subcommand.
+// Exit codes:
+//
+//	0 — all invariants pass
+//	1 — configuration or I/O error (directory not found, required CSV missing, parse error)
+//	2 — at least one invariant violated (detail printed to stderr)
+func runVerify(args []string) int {
+	if len(args) != 1 {
+		fmt.Fprintln(os.Stderr, "usage: fbx verify <dir>")
+		return 1
+	}
+	dir := args[0]
+
+	ds, err := reader.Load(dir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fbx: %v\n", err)
+		return 1
+	}
+
+	// invariant.Check is always run; ds.Truth is left nil by reader.Load.
+	// Verifying recon-stress-test output (which has deliberately injected
+	// mismatches) will produce exit 2 — this is expected and documented.
+	if err := invariant.Check(ds); err != nil {
+		var ie gen.InvariantError
+		if errors.As(err, &ie) {
+			fmt.Fprintf(os.Stderr, "fbx: invariant %d violated: %s\n", ie.Invariant, ie.Detail)
+		} else {
+			fmt.Fprintf(os.Stderr, "fbx: invariant check failed: %v\n", err)
+		}
+		return 2
+	}
+
+	return 0
 }
 
 // runGen handles the "fbx gen <bundle>" subcommand.

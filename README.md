@@ -63,6 +63,22 @@ PR-V03 adds `--format xlsx`: a single `fauxbooks.xlsx` workbook per run with one
 
 PR-V04 adds `--format pdf` which renders the eight financial report documents (P&L, Balance Sheet, Cash Flow, Trial Balance, AR Aging, AP Aging, Customer Statements, Check Register) as individual PDF files using standard PDF fonts (Helvetica, Times — no OS-level font embedding). Adds `--company-config <path.yaml>` for per-tenant branding (company name, address, phone, email). PDF output is byte-deterministic: creation and modification timestamps are pinned to the period start. Per-doc PDF selection is not supported in v0.2 — all eight documents are always produced together.
 
+PR-V05 adds `fbx verify <dir>`: reads CSV files from an existing `fbx gen` output directory, reconstructs an in-memory dataset, runs all four invariants, and exits 0 on pass or 2 on failure. Introduces the new `internal/reader` package (`Load(dir string) (gen.Dataset, error)`). Exit 1 on I/O or parse error; exit 2 on any invariant violation (detail printed to stderr including the invariant number and offending entry ID). Verifying `recon-stress-test` output exits 2 by design — the deliberately injected anomalies violate invariant 3.
+
+### `fbx verify <dir>`
+
+```
+fbx verify <dir>
+```
+
+Reads the CSV output in `<dir>` and re-runs invariant checks. Exit codes:
+
+| Code | Condition |
+|---|---|
+| `0` | All invariants pass — dataset is consistent. |
+| `1` | I/O or parse error (directory not found, required CSV missing, malformed decimal). |
+| `2` | At least one invariant violated — detail printed to stderr with invariant number and entry ID. |
+
 ## Bundles
 
 ### `monthly-close`
