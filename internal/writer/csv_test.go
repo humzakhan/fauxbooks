@@ -127,6 +127,108 @@ func TestCSVFlushCalled(t *testing.T) {
 	}
 }
 
+// TestWriteCustomers_CRLF verifies that WriteCustomers output contains no \r bytes.
+func TestWriteCustomers_CRLF(t *testing.T) {
+	customers := []gen.Customer{
+		{ID: "cust-001", Name: "Acme Corp", Email: "acme@example.com", Phone: "555-0100",
+			Address: "1 Main St", City: "Springfield", State: "IL", Zip: "62701"},
+		{ID: "cust-002", Name: "Globex", Email: "globex@example.com", Phone: "555-0101",
+			Address: "2 Oak Ave", City: "Shelbyville", State: "IL", Zip: "62702"},
+	}
+	var buf bytes.Buffer
+	if _, err := WriteCustomers(&buf, customers); err != nil {
+		t.Fatalf("WriteCustomers: %v", err)
+	}
+	assertNoCarriageReturn(t, buf.Bytes())
+}
+
+// TestWriteCustomers_Header verifies that the first line of WriteCustomers output
+// is exactly the expected header.
+func TestWriteCustomers_Header(t *testing.T) {
+	customers := []gen.Customer{
+		{ID: "cust-001", Name: "Acme Corp", Email: "acme@example.com", Phone: "555-0100",
+			Address: "1 Main St", City: "Springfield", State: "IL", Zip: "62701"},
+	}
+	var buf bytes.Buffer
+	if _, err := WriteCustomers(&buf, customers); err != nil {
+		t.Fatalf("WriteCustomers: %v", err)
+	}
+	lines := strings.Split(buf.String(), "\n")
+	if want := "id,name,email,phone,address,city,state,zip"; lines[0] != want {
+		t.Errorf("header = %q, want %q", lines[0], want)
+	}
+}
+
+// TestWriteCustomers_RowCount verifies that the row count matches the number of customers.
+func TestWriteCustomers_RowCount(t *testing.T) {
+	customers := []gen.Customer{
+		{ID: "cust-001", Name: "Acme Corp", Email: "a@example.com", Phone: "555-0100",
+			Address: "1 Main St", City: "Springfield", State: "IL", Zip: "62701"},
+		{ID: "cust-002", Name: "Globex", Email: "b@example.com", Phone: "555-0101",
+			Address: "2 Oak Ave", City: "Shelbyville", State: "IL", Zip: "62702"},
+		{ID: "cust-003", Name: "Initech", Email: "c@example.com", Phone: "555-0102",
+			Address: "3 Elm Rd", City: "Capital City", State: "IL", Zip: "62703"},
+	}
+	var buf bytes.Buffer
+	n, err := WriteCustomers(&buf, customers)
+	if err != nil {
+		t.Fatalf("WriteCustomers: %v", err)
+	}
+	if n != len(customers) {
+		t.Errorf("row count = %d, want %d", n, len(customers))
+	}
+}
+
+// TestWriteVendors_CRLF verifies that WriteVendors output contains no \r bytes.
+func TestWriteVendors_CRLF(t *testing.T) {
+	vendors := []gen.Vendor{
+		{ID: "vend-001", Name: "Supplier A", Email: "sa@example.com", Phone: "555-0200",
+			Address: "10 Pine St", City: "Springfield", State: "IL", Zip: "62701"},
+		{ID: "vend-002", Name: "Supplier B", Email: "sb@example.com", Phone: "555-0201",
+			Address: "11 Cedar Ave", City: "Shelbyville", State: "IL", Zip: "62702"},
+	}
+	var buf bytes.Buffer
+	if _, err := WriteVendors(&buf, vendors); err != nil {
+		t.Fatalf("WriteVendors: %v", err)
+	}
+	assertNoCarriageReturn(t, buf.Bytes())
+}
+
+// TestWriteVendors_Header verifies that the first line of WriteVendors output
+// is exactly the expected header.
+func TestWriteVendors_Header(t *testing.T) {
+	vendors := []gen.Vendor{
+		{ID: "vend-001", Name: "Supplier A", Email: "sa@example.com", Phone: "555-0200",
+			Address: "10 Pine St", City: "Springfield", State: "IL", Zip: "62701"},
+	}
+	var buf bytes.Buffer
+	if _, err := WriteVendors(&buf, vendors); err != nil {
+		t.Fatalf("WriteVendors: %v", err)
+	}
+	lines := strings.Split(buf.String(), "\n")
+	if want := "id,name,email,phone,address,city,state,zip"; lines[0] != want {
+		t.Errorf("header = %q, want %q", lines[0], want)
+	}
+}
+
+// TestWriteVendors_RowCount verifies that the row count matches the number of vendors.
+func TestWriteVendors_RowCount(t *testing.T) {
+	vendors := []gen.Vendor{
+		{ID: "vend-001", Name: "Supplier A", Email: "sa@example.com", Phone: "555-0200",
+			Address: "10 Pine St", City: "Springfield", State: "IL", Zip: "62701"},
+		{ID: "vend-002", Name: "Supplier B", Email: "sb@example.com", Phone: "555-0201",
+			Address: "11 Cedar Ave", City: "Shelbyville", State: "IL", Zip: "62702"},
+	}
+	var buf bytes.Buffer
+	n, err := WriteVendors(&buf, vendors)
+	if err != nil {
+		t.Fatalf("WriteVendors: %v", err)
+	}
+	if n != len(vendors) {
+		t.Errorf("row count = %d, want %d", n, len(vendors))
+	}
+}
+
 // TestCSVRowCount verifies that row counts returned by each writer equal the
 // number of data rows written (not including the header).
 func TestCSVRowCount(t *testing.T) {
