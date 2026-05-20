@@ -28,11 +28,13 @@ This generates a clean month-end close dataset for January 2026 into `./output/`
 
 ## Commands
 
-### `fbx gen <bundle>`
+### `fbx gen [<bundle>]`
 
 ```
-fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl|xlsx|pdf] [--company-config PATH]
+fbx gen [<bundle>] --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl|xlsx|pdf] [--company-config PATH] [--bundle-config PATH] [--templates-config PATH]
 ```
+
+The `<bundle>` positional argument is required when `--bundle-config` is not set. When `--bundle-config` is provided, `<bundle>` is optional (the bundle name is taken from the YAML file).
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -42,6 +44,8 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 | `--out` | string | `.` | Output directory. Created if it does not exist. |
 | `--format` | string | `csv` | Output format: `csv`, `jsonl`, `xlsx`, or `pdf`. XLSX writes a single `fauxbooks.xlsx` workbook; PDF writes 8 individual `.pdf` files. |
 | `--company-config` | string | `""` | Path to a YAML file with company branding for PDF output (company_name, address, phone, email, logo_path). Uses a built-in default when omitted. |
+| `--bundle-config` | string | `""` | Path to a YAML file defining a custom event mix and volume scale. Overrides the built-in bundle. See YAML bundle schema below. |
+| `--templates-config` | string | `""` | Path to a YAML file defining custom journal-entry templates. Validated at startup; must reference existing account codes from the built-in CoA. |
 
 **Exit codes:**
 
@@ -66,6 +70,8 @@ PR-V04 adds `--format pdf` which renders the eight financial report documents (P
 PR-V05 adds `fbx verify <dir>`: reads CSV files from an existing `fbx gen` output directory, reconstructs an in-memory dataset, runs all four invariants, and exits 0 on pass or 2 on failure. Introduces the new `internal/reader` package (`Load(dir string) (gen.Dataset, error)`). Exit 1 on I/O or parse error; exit 2 on any invariant violation (detail printed to stderr including the invariant number and offending entry ID). Verifying `recon-stress-test` output exits 2 by design — the deliberately injected anomalies violate invariant 3.
 
 PR-V06 adds `fbx convert --in <path> --out <path>`: converts a single file between CSV, XLSX, and JSONL formats. Format is detected from the file extension. All six conversion directions are supported (CSV↔XLSX, CSV↔JSONL, XLSX↔JSONL). Streaming throughout — O(1) memory per row. Decimal strings are never parsed through `float64`: JSONL values use `json.RawMessage`, XLSX cells use excelize's string-value API. JSONL → XLSX column order is stabilised by sorting the keys from the first JSON line. XLSX output timestamps are not pinned (convert is not subject to the byte-determinism requirement; use `fbx gen --format xlsx` when deterministic XLSX is needed).
+
+PR-V07 adds YAML-configurable custom bundles and templates. `--bundle-config <path.yaml>` loads an alternative event mix and volume-scale map, bypassing the built-in bundle name requirement. `--templates-config <path.yaml>` loads custom journal-entry template definitions (validated at startup; v0.2 supports `amount_field: amount` only). Both flags are optional and independent; omitting them uses the built-in behaviour unchanged. The built-in `monthly-close` and `recon-stress-test` bundles produce byte-identical output after this refactor — RNG call order is preserved exactly.
 
 ### `fbx verify <dir>`
 
@@ -105,6 +111,46 @@ Converts a single file between supported formats. Format is detected from the fi
 | `2` | I/O error during conversion. |
 
 **Decimal preservation:** all decimal strings survive any conversion path unchanged. Values are never routed through `float64`. JSONL → XLSX column order is alphabetically sorted from the first line's keys and fixed for all subsequent rows.
+
+## YAML bundle and template configuration
+
+### Bundle YAML schema (`--bundle-config`)
+
+```yaml
+name: my-bundle           # required; non-empty string
+stress_test: false        # optional; enables injection pass (like recon-stress-test)
+event_mix:
+  sale_invoice: 5         # positive integer weight; key must be a registered event type
+  vendor_bill: 5
+  customer_payment: 3
+  bill_payment: 3
+volume_scale:             # required; must include small, medium, and large tiers
+  small: 10
+  medium: 50
+  large: 100
+```
+
+Valid event type keys: `sale_invoice`, `customer_payment`, `vendor_bill`, `bill_payment`, `expense_report`, `payroll`, `depreciation`, `inventory_purchase`, `inventory_cogs`, `interest_income`.
+
+**Example usage:**
+
+```bash
+fbx gen --bundle-config ./my-bundle.yaml --seed 1 --period 2026-01 --volume small --out ./output
+fbx verify ./output
+```
+
+### Templates YAML schema (`--templates-config`)
+
+```yaml
+templates:
+  - event_type: sale_invoice      # registered event type
+    debit_account: "1100"         # account code from DefaultCoA
+    credit_account: "4000"        # account code from DefaultCoA
+    amount_field: amount          # must be "amount" in v0.2
+    description: "Custom invoice"
+```
+
+All account codes must exist in the built-in chart of accounts. `amount_field` must be `"amount"` — the only supported metadata key in v0.2.
 
 ## Bundles
 

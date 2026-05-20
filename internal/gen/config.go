@@ -72,6 +72,35 @@ type Config struct {
 	Version string
 }
 
+// ParseConfigNoBundle validates period, volume, and format but does not
+// validate the bundle name against validBundles. Use this when the bundle
+// definition has been loaded from a YAML file (--bundle-config flag) and
+// the bundle name is taken from the YAML rather than the built-in set.
+func ParseConfigNoBundle(seed int64, period, volume, bundle, outDir, format string) (Config, error) {
+	t, err := time.Parse("2006-01", period)
+	if err != nil {
+		return Config{}, fmt.Errorf("%w: %s", ErrBadPeriod, period)
+	}
+	t = t.UTC()
+
+	if !validVolumes[volume] {
+		return Config{}, fmt.Errorf("%w: %s", ErrUnknownVolume, volume)
+	}
+
+	if !validFormats[format] {
+		return Config{}, fmt.Errorf("%w: %s", ErrUnknownFormat, format)
+	}
+
+	return Config{
+		Seed:   seed,
+		Period: t,
+		Volume: volume,
+		Bundle: bundle,
+		OutDir: outDir,
+		Format: format,
+	}, nil
+}
+
 // ParseConfig validates raw flag values and returns a populated Config.
 // It returns ErrBadPeriod, ErrUnknownVolume, or ErrUnknownBundle for the
 // corresponding invalid input; other errors are wrapped with context.
