@@ -21,6 +21,10 @@ var ErrUnknownVolume = errors.New("gen: unknown volume tier; want small|medium|l
 // fbx gen is not one of the bundles built into this version.
 var ErrUnknownBundle = errors.New("gen: unknown bundle name")
 
+// ErrUnknownFormat is returned by ParseConfig when the --format flag is not
+// one of the recognised output formats (csv, jsonl).
+var ErrUnknownFormat = errors.New("gen: unknown format; want csv|jsonl")
+
 // validVolumes is the exhaustive set of recognised volume tiers for v0.1.
 var validVolumes = map[string]bool{
 	"small":  true,
@@ -32,6 +36,12 @@ var validVolumes = map[string]bool{
 var validBundles = map[string]bool{
 	"monthly-close":     true,
 	"recon-stress-test": true,
+}
+
+// validFormats is the exhaustive set of recognised output formats for v0.1.
+var validFormats = map[string]bool{
+	"csv":   true,
+	"jsonl": true,
 }
 
 // Config holds all parameters needed to reproduce a deterministic generation
@@ -55,6 +65,9 @@ type Config struct {
 
 	// Format is the output format: csv or jsonl.
 	Format string
+
+	// Version is the fbx binary version that produced this dataset (e.g. "v0.1.0").
+	Version string
 }
 
 // ParseConfig validates raw flag values and returns a populated Config.
@@ -73,6 +86,10 @@ func ParseConfig(seed int64, period, volume, bundle, outDir, format string) (Con
 
 	if !validBundles[bundle] {
 		return Config{}, fmt.Errorf("%w: %s", ErrUnknownBundle, bundle)
+	}
+
+	if !validFormats[format] {
+		return Config{}, fmt.Errorf("%w: %s", ErrUnknownFormat, format)
 	}
 
 	return Config{

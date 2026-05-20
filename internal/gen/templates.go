@@ -6,6 +6,11 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// ficaRate is the FICA tax rate used for payroll entries (employee and employer
+// shares). Declared as a package-level var using RequireFromString to avoid any
+// float64 representation ambiguity in the monetary path.
+var ficaRate = decimal.RequireFromString("0.0765")
+
 // Account code mapping per event type (all codes verified to exist in DefaultCoA):
 //
 //	sale_invoice:
@@ -283,9 +288,8 @@ func expandPayroll(entryID string, ev Event, coa map[string]Account, counter *in
 	}
 
 	gross := ev.Amount
-	rate := decimal.NewFromFloat(0.0765)
-	employeeTax := gross.Mul(rate).RoundBank(9)
-	employerTax := gross.Mul(rate).RoundBank(9)
+	employeeTax := gross.Mul(ficaRate).RoundBank(9)
+	employerTax := gross.Mul(ficaRate).RoundBank(9)
 	netPay := gross.Sub(employeeTax)
 
 	// Last credit leg = total debits - sum of prior credits (exact balance by construction).

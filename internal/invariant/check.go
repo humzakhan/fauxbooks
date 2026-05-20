@@ -87,7 +87,7 @@ func checkInv3(ds gen.Dataset) error {
 	// Sum GL rows on cash account codes with the same formula.
 	var glCashNet decimal.Decimal
 	for _, gr := range ds.GL {
-		if !gen.CashAccountCodes[gr.AccountCode] {
+		if !gen.IsCashAccount(gr.AccountCode) {
 			continue
 		}
 		d, _ := decimal.NewFromString(gr.Debit)

@@ -38,6 +38,7 @@ type manifestJSON struct {
 	Bundle     string         `json:"bundle"`
 	Volume     string         `json:"volume"`
 	Format     string         `json:"format"`
+	Version    string         `json:"version"`
 	RowCounts  []fileRowCount `json:"row_counts"`
 	FileSHA256 []fileHash     `json:"file_sha256"`
 }
@@ -213,6 +214,7 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 		Bundle:     cfg.Bundle,
 		Volume:     cfg.Volume,
 		Format:     cfg.Format,
+		Version:    cfg.Version,
 		RowCounts:  rowCounts,
 		FileSHA256: hashes,
 	}

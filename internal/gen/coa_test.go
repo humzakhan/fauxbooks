@@ -64,18 +64,18 @@ func TestIndexCoANoDuplicates(t *testing.T) {
 	}
 }
 
-// TestCashAccountCodesInDefaultCoA confirms that every code in CashAccountCodes
+// TestCashAccountCodesInDefaultCoA confirms that every code in cashAccountCodes
 // exists in DefaultCoA and that at least one cash code is present.
 func TestCashAccountCodesInDefaultCoA(t *testing.T) {
 	index := IndexCoA(DefaultCoA())
 
-	if len(CashAccountCodes) == 0 {
-		t.Fatal("CashAccountCodes is empty; at least one cash account is required")
+	if len(cashAccountCodes) == 0 {
+		t.Fatal("cashAccountCodes is empty; at least one cash account is required")
 	}
 
-	for code := range CashAccountCodes {
+	for code := range cashAccountCodes {
 		if _, ok := index[code]; !ok {
-			t.Errorf("cash account code %q is in CashAccountCodes but not in DefaultCoA()", code)
+			t.Errorf("cash account code %q is in cashAccountCodes but not in DefaultCoA()", code)
 		}
 	}
 }

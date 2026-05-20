@@ -22,6 +22,11 @@ import (
 	"github.com/humzakhan/fauxbooks/internal/writer"
 )
 
+// Version is the fbx binary version embedded at compile time.
+// Use a package-level constant so tests and the version subcommand
+// reference the same value without ldflags.
+const Version = "v0.1.0"
+
 func main() {
 	os.Exit(run(os.Args[1:]))
 }
@@ -37,6 +42,9 @@ func run(args []string) int {
 	switch args[0] {
 	case "gen":
 		return runGen(args[1:])
+	case "version":
+		fmt.Println(Version)
+		return 0
 	default:
 		fmt.Fprintf(os.Stderr, "fbx: unknown subcommand %q\n", args[0])
 		return 1
@@ -73,6 +81,7 @@ func runGen(args []string) int {
 		fmt.Fprintf(os.Stderr, "fbx: config error: %v\n", err)
 		return 1
 	}
+	cfg.Version = Version
 
 	// Ensure output directory exists before generating anything.
 	if err := os.MkdirAll(cfg.OutDir, 0755); err != nil {

@@ -7,6 +7,27 @@ import (
 	"testing"
 )
 
+// TestVersion is a subprocess smoke test that runs "fbx version" and asserts
+// exit 0 with stdout "v0.1.0\n".
+func TestVersion(t *testing.T) {
+	dir := t.TempDir()
+	bin := filepath.Join(dir, "fbx")
+
+	build := exec.Command("go", "build", "-o", bin, ".")
+	build.Dir = "."
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("go build: %v\n%s", err, out)
+	}
+
+	out, err := exec.Command(bin, "version").Output()
+	if err != nil {
+		t.Fatalf("fbx version: %v", err)
+	}
+	if got := string(out); got != "v0.1.0\n" {
+		t.Errorf("fbx version stdout = %q; want %q", got, "v0.1.0\n")
+	}
+}
+
 // TestGenMonthlyClose is a subprocess smoke test. It builds a real fbx binary
 // and runs "fbx gen monthly-close --seed 1 --period 2026-01 --volume small",
 // asserting exit 0 and empty stderr.

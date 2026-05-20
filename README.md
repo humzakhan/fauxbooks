@@ -8,7 +8,7 @@
 go install github.com/humzakhan/fauxbooks/cmd/fbx@latest
 ```
 
-Requires Go 1.22 or later. No CGo. Produces a single static binary.
+Requires Go 1.24 or later. No CGo. Produces a single static binary.
 
 **From source:**
 

@@ -204,7 +204,7 @@ func TestExpandUnknownEventType(t *testing.T) {
 	ev := Event{
 		ID:         "evt-bad",
 		Type:       EventType("bogus_type"),
-		OccurredAt: time.Now(),
+		OccurredAt: time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC),
 		Amount:     decimal.NewFromInt(1),
 		RefID:      "ref-001",
 		Metadata:   map[string]string{},

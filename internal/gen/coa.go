@@ -1,13 +1,18 @@
 package gen
 
-// CashAccountCodes is the canonical set of account codes that represent cash
-// accounts. This constant is the single source of truth used by both the
-// projection engine (PR-05) and the invariant checker (PR-06) so the two sets
-// can never diverge.
-var CashAccountCodes = map[string]bool{
+// cashAccountCodes is the canonical set of account codes that represent cash
+// accounts. Unexported to prevent external mutation; use IsCashAccount to query.
+var cashAccountCodes = map[string]bool{
 	"1010": true, // Checking Account
 	"1020": true, // Savings Account
 	"1030": true, // Petty Cash
+}
+
+// IsCashAccount reports whether code is one of the recognised cash account
+// codes. It is the single source of truth used by both the projection engine
+// and the invariant checker so the two sets can never diverge.
+func IsCashAccount(code string) bool {
+	return cashAccountCodes[code]
 }
 
 // defaultCoA is the hardcoded chart of accounts returned by DefaultCoA.
