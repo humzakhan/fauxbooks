@@ -31,7 +31,7 @@ This generates a clean month-end close dataset for January 2026 into `./output/`
 ### `fbx gen <bundle>`
 
 ```
-fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl|xlsx]
+fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl|xlsx|pdf] [--company-config PATH]
 ```
 
 | Flag | Type | Default | Description |
@@ -40,7 +40,8 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 | `--period` | YYYY-MM | required | Target month. All timestamps derive from this value. |
 | `--volume` | string | `small` | Dataset size tier: `small`, `medium`, or `large`. |
 | `--out` | string | `.` | Output directory. Created if it does not exist. |
-| `--format` | string | `csv` | Output format: `csv`, `jsonl`, or `xlsx`. XLSX writes a single `fauxbooks.xlsx` workbook. |
+| `--format` | string | `csv` | Output format: `csv`, `jsonl`, `xlsx`, or `pdf`. XLSX writes a single `fauxbooks.xlsx` workbook; PDF writes 8 individual `.pdf` files. |
+| `--company-config` | string | `""` | Path to a YAML file with company branding for PDF output (company_name, address, phone, email, logo_path). Uses a built-in default when omitted. |
 
 **Exit codes:**
 
@@ -59,6 +60,8 @@ PR-V01 adds four derived financial report files per run (Profit & Loss, Balance 
 PR-V02 adds three more derived report types: AR/AP aging by bucket (`ar-aging.csv/.jsonl`, `ap-aging.csv/.jsonl`), per-customer statements (`customer-statements.csv/.jsonl`), and a check register of cash disbursements (`check-register.csv/.jsonl`). Party attribution uses deterministic FNV-1a hashing — no new RNG draws.
 
 PR-V03 adds `--format xlsx`: a single `fauxbooks.xlsx` workbook per run with one sheet per document. Decimal values are written as inline-string cells to preserve precision. All ZIP-entry timestamps are pinned to the period start for byte-identical binary output across runs.
+
+PR-V04 adds `--format pdf` which renders the eight financial report documents (P&L, Balance Sheet, Cash Flow, Trial Balance, AR Aging, AP Aging, Customer Statements, Check Register) as individual PDF files using standard PDF fonts (Helvetica, Times — no OS-level font embedding). Adds `--company-config <path.yaml>` for per-tenant branding (company name, address, phone, email). PDF output is byte-deterministic: creation and modification timestamps are pinned to the period start. Per-doc PDF selection is not supported in v0.2 — all eight documents are always produced together.
 
 ## Bundles
 

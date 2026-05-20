@@ -2,7 +2,7 @@
 //
 // Usage:
 //
-//	fbx gen <bundle> --seed N --period YYYY-MM --volume small|medium|large [--out DIR] [--format csv|jsonl|xlsx]
+//	fbx gen <bundle> --seed N --period YYYY-MM --volume small|medium|large [--out DIR] [--format csv|jsonl|xlsx|pdf] [--company-config PATH]
 //
 // Exit codes:
 //
@@ -66,11 +66,12 @@ func runGen(args []string) int {
 	fs.SetOutput(os.Stderr)
 
 	var (
-		seed   = fs.Int64("seed", 0, "RNG seed (required for deterministic output)")
-		period = fs.String("period", "", "target month in YYYY-MM format (required)")
-		volume = fs.String("volume", "small", "size tier: small|medium|large")
-		out    = fs.String("out", ".", "output directory")
-		format = fs.String("format", "csv", "output format: csv|jsonl|xlsx")
+		seed          = fs.Int64("seed", 0, "RNG seed (required for deterministic output)")
+		period        = fs.String("period", "", "target month in YYYY-MM format (required)")
+		volume        = fs.String("volume", "small", "size tier: small|medium|large")
+		out           = fs.String("out", ".", "output directory")
+		format        = fs.String("format", "csv", "output format: csv|jsonl|xlsx|pdf")
+		companyConfig = fs.String("company-config", "", "path to YAML company config file for PDF output")
 	)
 
 	if err := fs.Parse(rest); err != nil {
@@ -128,11 +129,24 @@ func runGen(args []string) int {
 	reports.CheckRegister = report.ComputeCheckRegister(ds)
 
 	// Step 4: write all output files.
-	// xlsx is a complete substitute for the CSV file set; dispatch separately.
+	// Dispatch based on format; each format is a complete substitute for the others.
 	var writeErr error
-	if cfg.Format == "xlsx" {
+	switch cfg.Format {
+	case "xlsx":
 		writeErr = writer.WriteXLSX(ds, reports, cfg, cfg.OutDir)
-	} else {
+	case "pdf":
+		var companyCfg writer.CompanyConfig
+		if *companyConfig != "" {
+			companyCfg, writeErr = writer.LoadCompanyConfig(*companyConfig)
+			if writeErr != nil {
+				fmt.Fprintf(os.Stderr, "fbx: company-config: %v\n", writeErr)
+				return 1
+			}
+		} else {
+			companyCfg = writer.DefaultCompanyConfig()
+		}
+		writeErr = writer.WritePDF(reports, cfg, companyCfg, cfg.OutDir)
+	default:
 		writeErr = writer.Write(ds, reports, cfg, cfg.OutDir)
 	}
 	if writeErr != nil {
