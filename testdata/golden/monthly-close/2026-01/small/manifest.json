@@ -7,6 +7,14 @@
   "version": "",
   "row_counts": [
     {
+      "name": "ap-aging.csv",
+      "count": 10
+    },
+    {
+      "name": "ar-aging.csv",
+      "count": 9
+    },
+    {
       "name": "balance-sheet.csv",
       "count": 12
     },
@@ -27,8 +35,16 @@
       "count": 7
     },
     {
+      "name": "check-register.csv",
+      "count": 40
+    },
+    {
       "name": "coa.csv",
       "count": 51
+    },
+    {
+      "name": "customer-statements.csv",
+      "count": 10
     },
     {
       "name": "customer_payments.csv",
@@ -69,6 +85,14 @@
   ],
   "file_sha256": [
     {
+      "name": "ap-aging.csv",
+      "sha256": "f0e07e5724529a6bb3d59bf42bf682ef2f383e8d17964691e55f0ca9914f404e"
+    },
+    {
+      "name": "ar-aging.csv",
+      "sha256": "e4a6c435e84104bfab9d94f83029e821435994dbdf45d04cbfa38f093134251c"
+    },
+    {
       "name": "balance-sheet.csv",
       "sha256": "7fd4d8457f98769662c36721e38442d90b0413f4f0572a491a48da0cd6c892f5"
     },
@@ -89,8 +113,16 @@
       "sha256": "d4abf4e1bd3f5b098dc05b78c36305e5293890d9e1934cc439aff97d5a657967"
     },
     {
+      "name": "check-register.csv",
+      "sha256": "6b4b6aa2ed1445de41e69453b431cbe1736f55c0c8ec3180ba9b391741d52de8"
+    },
+    {
       "name": "coa.csv",
       "sha256": "937c87bcd402787f46fd3a96f80b7b73cbace215554fce1b10b6c81009546d3c"
+    },
+    {
+      "name": "customer-statements.csv",
+      "sha256": "cb4b20b977250c508fd819a80cdcb2187b6dbc5b46fbaa87f11f31d4b55d08d6"
     },
     {
       "name": "customer_payments.csv",
