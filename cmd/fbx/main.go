@@ -16,6 +16,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
 	"github.com/humzakhan/fauxbooks/internal/invariant"
@@ -116,6 +117,15 @@ func runGen(args []string) int {
 	// Step 3: derive period reports from the validated dataset. Compute is a
 	// pure function — no RNG, no wall-clock, no I/O — so it cannot fail.
 	reports := report.Compute(ds)
+
+	// periodEnd is the last nanosecond of the period month.
+	// cfg.Period is the first instant of the month (YYYY-MM → UTC midnight day 1).
+	periodEnd := cfg.Period.AddDate(0, 1, 0).Add(-time.Nanosecond)
+
+	// Compute the three new v0.2 derived reports and assign them to the Reports struct.
+	reports.Aging = report.ComputeAging(ds, periodEnd)
+	reports.CustomerStatements = report.ComputeStatements(ds)
+	reports.CheckRegister = report.ComputeCheckRegister(ds)
 
 	// Step 4: write all output files.
 	if err := writer.Write(ds, reports, cfg, cfg.OutDir); err != nil {

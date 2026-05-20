@@ -153,6 +153,18 @@ func Write(ds gen.Dataset, reports report.Reports, cfg gen.Config, outDir string
 			{"trial-balance.jsonl", func(w io.Writer) (int, error) {
 				return WriteTrialBalanceJSONL(w, reports.TrialBalance)
 			}},
+			{"ar-aging.jsonl", func(w io.Writer) (int, error) {
+				return WriteARAgingJSONL(w, reports.Aging)
+			}},
+			{"ap-aging.jsonl", func(w io.Writer) (int, error) {
+				return WriteAPAgingJSONL(w, reports.Aging)
+			}},
+			{"customer-statements.jsonl", func(w io.Writer) (int, error) {
+				return WriteCustomerStatementsJSONL(w, reports.CustomerStatements)
+			}},
+			{"check-register.jsonl", func(w io.Writer) (int, error) {
+				return WriteCheckRegisterJSONL(w, reports.CheckRegister)
+			}},
 		}
 	} else {
 		// Default: CSV.
@@ -201,6 +213,18 @@ func Write(ds gen.Dataset, reports report.Reports, cfg gen.Config, outDir string
 			}},
 			{"trial-balance.csv", func(w io.Writer) (int, error) {
 				return WriteTrialBalance(w, reports.TrialBalance)
+			}},
+			{"ar-aging.csv", func(w io.Writer) (int, error) {
+				return WriteARAging(w, reports.Aging)
+			}},
+			{"ap-aging.csv", func(w io.Writer) (int, error) {
+				return WriteAPAging(w, reports.Aging)
+			}},
+			{"customer-statements.csv", func(w io.Writer) (int, error) {
+				return WriteCustomerStatements(w, reports.CustomerStatements)
+			}},
+			{"check-register.csv", func(w io.Writer) (int, error) {
+				return WriteCheckRegister(w, reports.CheckRegister)
 			}},
 		}
 	}

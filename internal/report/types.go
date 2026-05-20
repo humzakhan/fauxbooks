@@ -6,16 +6,23 @@
 // internal/writer/ serialise the typed structs to CSV and JSONL.
 package report
 
-import "github.com/shopspring/decimal"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
 
 // Reports bundles the four period-derived financial reports produced from one
 // gen.Dataset. Each field is independently consumable; the writer emits one
 // output file pair (.csv + .jsonl) per field.
 type Reports struct {
-	ProfitLoss   ProfitLoss
-	BalanceSheet BalanceSheet
-	CashFlow     CashFlow
-	TrialBalance TrialBalance
+	ProfitLoss         ProfitLoss
+	BalanceSheet       BalanceSheet
+	CashFlow           CashFlow
+	TrialBalance       TrialBalance
+	Aging              AgingReport
+	CustomerStatements []CustomerStatement
+	CheckRegister      []CheckRegisterRow
 }
 
 // ProfitLoss summarises revenue minus expense for the period.
@@ -98,4 +105,44 @@ type TrialBalanceRow struct {
 	AccountType string
 	Debit       decimal.Decimal
 	Credit      decimal.Decimal
+}
+
+// AgingReport holds AR and AP aging rows, each partitioned into four buckets
+// by the number of days since the invoice or bill was issued.
+type AgingReport struct {
+	AR []AgingRow
+	AP []AgingRow
+}
+
+// AgingRow is one party's aging summary across four day-range buckets.
+// All monetary amounts are gross (no payment offsets applied).
+type AgingRow struct {
+	PartyID      string
+	PartyName    string
+	Bucket0_30   decimal.Decimal
+	Bucket31_60  decimal.Decimal
+	Bucket61_90  decimal.Decimal
+	Bucket91Plus decimal.Decimal
+	Total        decimal.Decimal
+}
+
+// CustomerStatement is one customer's period-level AR activity.
+// Opening balance is always zero for v0.2 (no prior-period carry-forward).
+type CustomerStatement struct {
+	CustomerID   string
+	CustomerName string
+	Opening      decimal.Decimal
+	Invoiced     decimal.Decimal
+	Payments     decimal.Decimal
+	Closing      decimal.Decimal
+}
+
+// CheckRegisterRow is one line in the check register: one row per BillPayment
+// or ExpenseReport sub-ledger entry.
+type CheckRegisterRow struct {
+	Date        time.Time
+	EntryID     string
+	AccountCode string
+	Payee       string
+	Amount      decimal.Decimal
 }

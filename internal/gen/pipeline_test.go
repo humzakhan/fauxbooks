@@ -64,6 +64,10 @@ func runPipeline(t *testing.T, cfg gen.Config, outDir string) {
 	}
 
 	reports := report.Compute(ds)
+	periodEnd := cfg.Period.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	reports.Aging = report.ComputeAging(ds, periodEnd)
+	reports.CustomerStatements = report.ComputeStatements(ds)
+	reports.CheckRegister = report.ComputeCheckRegister(ds)
 	if err := writer.Write(ds, reports, cfg, outDir); err != nil {
 		t.Fatalf("writer.Write: %v", err)
 	}

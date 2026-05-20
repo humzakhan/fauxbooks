@@ -56,6 +56,8 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 
 PR-V01 adds four derived financial report files per run (Profit & Loss, Balance Sheet, Cash Flow, Trial Balance), each written in both CSV and JSONL formats. These are computed from the event-sourced dataset by the new `internal/report` package and written by streaming writers in `internal/writer`.
 
+PR-V02 adds three more derived report types: AR/AP aging by bucket (`ar-aging.csv/.jsonl`, `ap-aging.csv/.jsonl`), per-customer statements (`customer-statements.csv/.jsonl`), and a check register of cash disbursements (`check-register.csv/.jsonl`). Party attribution uses deterministic FNV-1a hashing — no new RNG draws.
+
 ## Bundles
 
 ### `monthly-close`
@@ -136,6 +138,10 @@ All files are written under `--out`. CSV files are RFC 4180, UTF-8, `\n` line en
 | `balance-sheet.csv` / `.jsonl` | Balance Sheet (assets, liabilities, equity) as of period end. |
 | `cash-flow.csv` / `.jsonl` | Cash Flow statement (operating, investing, financing). |
 | `trial-balance.csv` / `.jsonl` | Trial Balance — debit and credit totals per account. |
+| `ar-aging.csv` / `.jsonl` | AR aging — gross invoiced amounts per customer by 0-30, 31-60, 61-90, 91+ day buckets. |
+| `ap-aging.csv` / `.jsonl` | AP aging — gross billed amounts per vendor by 0-30, 31-60, 61-90, 91+ day buckets. |
+| `customer-statements.csv` / `.jsonl` | Customer statements — opening balance, invoiced, payments, and closing balance per customer. |
+| `check-register.csv` / `.jsonl` | Check register — one row per bill payment and expense report, sorted by date and entry ID. |
 
 **Stress-test only:**
 
