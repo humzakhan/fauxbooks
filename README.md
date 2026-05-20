@@ -1,100 +1,192 @@
-# fauxbooks / fbx
+# fauxbooks (fbx)
 
-**fauxbooks** is an open-source Go CLI that generates reconcilable-by-construction synthetic accounting datasets. It treats the generator as an event-sourced bookkeeping system: each business event emits a balanced set of journal entries, and every output file — GL, bank statement, invoices, bills, expense reports — is a projection over that event stream. Consistency is the only way the data can be created; there is no separate reconciliation pass. Same seed + bundle + period + version produces byte-identical output across runs, OSes, and architectures.
-
-The primary audiences are engineers building accounting and fintech software, AI/ML teams evaluating finance agents against balanced ground-truth data, auditors and instructors who need realistic datasets without touching client data, and researchers who need reproducible benchmarks.
+**fauxbooks** is an open-source Go CLI that generates deterministic, reconcilable synthetic accounting datasets. The generator is event-sourced: each business event (sale, bill payment, expense report) emits a balanced set of journal lines via a built-in template, and every output file — GL, bank statement, invoices, bills, expense reports — is a projection over that event stream. Consistency is the only way the data can be created; there is no separate reconciliation pass. The same seed, bundle, period, and version produce byte-identical output across runs, operating systems, and CPU architectures. The primary audiences are engineers building accounting and fintech software, AI/ML teams evaluating finance agents against balanced ground-truth data, and researchers who need reproducible benchmarks.
 
 ## Install
 
-```
+```bash
 go install github.com/humzakhan/fauxbooks/cmd/fbx@latest
 ```
 
 Requires Go 1.22 or later. No CGo. Produces a single static binary.
 
+**From source:**
+
+```bash
+git clone https://github.com/humzakhan/fauxbooks.git
+cd fauxbooks
+go build -o fbx ./cmd/fbx
+```
+
 ## Quick start
 
-**Generate a standard monthly-close dataset (small volume, CSV):**
-
-```
-fbx gen monthly-close --seed 42 --period 2026-01 --volume small --out ./output
+```bash
+fbx gen monthly-close --seed 1 --period 2026-01 --volume small --out ./output
 ```
 
-**Generate a recon-stress-test dataset with injected anomalies:**
+This generates a clean month-end close dataset for January 2026 into `./output/` — twelve files including GL, bank statement, sub-ledgers, and a `manifest.json` with SHA-256 hashes. All four write-time invariants hold; entries are balanced and cross-references are valid.
+
+## Commands
+
+### `fbx gen <bundle>`
 
 ```
-fbx gen recon-stress-test --seed 42 --period 2026-01 --volume small --out ./output
+fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl]
 ```
 
-The stress-test bundle produces the same files as monthly-close plus `truth.json`, which records every injected anomaly (timing differences, duplicates, orphan bank rows).
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `--seed` | int64 | `0` | RNG seed. Any value gives deterministic output; `0` is a valid seed. |
+| `--period` | YYYY-MM | required | Target month. All timestamps derive from this value. |
+| `--volume` | string | `small` | Dataset size tier: `small`, `medium`, or `large`. |
+| `--out` | string | `.` | Output directory. Created if it does not exist. |
+| `--format` | string | `csv` | Output format: `csv` or `jsonl`. |
 
-**JSONL output:**
+**Exit codes:**
 
-```
-fbx gen monthly-close --seed 42 --period 2026-01 --volume small --format jsonl --out ./output
-```
-
-**Flags:**
-
-| Flag | Default | Description |
-|---|---|---|
-| `--seed N` | `0` | RNG seed; any int64 value gives deterministic output |
-| `--period YYYY-MM` | required | Target month |
-| `--volume small\|medium\|large` | `small` | Dataset size (≈1k / 10k / 100k GL rows) |
-| `--out DIR` | `.` | Output directory (created if missing) |
-| `--format csv\|jsonl` | `csv` | Output format |
-
-## Output files
-
-| File | Description |
+| Code | Condition |
 |---|---|
-| `coa.csv` | Chart of accounts |
-| `journal_entries.csv` | Entry headers (one row per entry) |
-| `gl.csv` | General ledger lines |
-| `bank_statement.csv` | Cash account postings |
-| `customers.csv` | Customer master |
-| `invoices.csv` | Sales invoice line items |
-| `customer_payments.csv` | AR payments applied to invoices |
-| `vendors.csv` | Vendor master |
-| `bills.csv` | Vendor bill line items |
-| `bill_payments.csv` | AP disbursements |
-| `expense_reports.csv` | Expense reports |
-| `manifest.json` | Seed, flags, version, row counts, SHA-256 per file |
-| `truth.json` | (recon-stress-test only) Ground truth of injected anomalies |
+| `0` | Success — all files written. |
+| `1` | Configuration or input error (bad flag, unknown bundle, malformed period). Nothing written. |
+| `2` | Invariant violation or I/O error. Nothing written. |
 
-Every monetary column is decimal text with 9 fractional digits (e.g. `100.000000000`) — never float, no thousands separators, no scientific notation.
+`fbx gen` is the only subcommand in v0.1.
 
 ## Bundles
 
-- **`monthly-close`** — standard month-end close dataset. All four write-time invariants hold: entries balance, all account codes exist in the CoA, bank totals tie to GL cash postings, and all sub-ledger rows reference existing entries.
-- **`recon-stress-test`** — same event mix, but with three classes of anomaly injected after projection: timing differences (bank date shifted vs. GL date), duplicates (verbatim duplicate bank rows), and orphan bank rows (bank entries with no GL counterpart). `truth.json` records exactly what was injected.
+### `monthly-close`
+
+Generates a standard month-end close dataset with a realistic event mix: sales invoices, customer payments, vendor bills, bill payments, expense reports, payroll, depreciation, inventory purchases, inventory COGS, and interest income. All four write-time invariants hold — entries balance, every account code exists in the chart of accounts, bank totals tie to GL cash postings, and every sub-ledger row references an existing entry. Suitable for testing accounting pipelines, training ML models on balanced data, and generating reproducible demo datasets.
+
+### `recon-stress-test`
+
+Uses the same event mix as `monthly-close`, then runs a second injection pass that deliberately introduces three classes of anomaly: timing differences (bank row dates shifted relative to GL), duplicate bank rows (verbatim copies with new row numbers), and orphan bank rows (bank entries with no GL counterpart). Invariant checks are skipped by design — the injected anomalies would fail them. Every injection is recorded in `truth.json`. Suitable for testing and benchmarking reconciliation tools and agents.
+
+## Volume tiers
+
+| Tier | Events | Approximate GL rows | Approximate output size |
+|---|---|---|---|
+| `small` | 150 | ~333 | ~90 KB |
+| `medium` | 1,500 | ~3,300 | ~900 KB |
+| `large` | 15,000 | ~33,000 | ~9 MB |
+
+Each event emits multiple journal lines; GL row count varies with the event mix. Hard cap is 10^7 GL rows; for larger datasets, generate multiple periods.
+
+## Examples
+
+**1. Minimal monthly-close run (seed 1, January 2026, small, CSV):**
+
+```bash
+fbx gen monthly-close --seed 1 --period 2026-01 --volume small --out ./output
+```
+
+**2. Stress-test run with a different seed:**
+
+```bash
+fbx gen recon-stress-test --seed 7 --period 2026-01 --volume small --out ./stress-output
+```
+
+Produces all standard files plus `truth.json` listing every injected anomaly.
+
+**3. JSONL output:**
+
+```bash
+fbx gen monthly-close --seed 1 --period 2026-01 --volume small --format jsonl --out ./output-jsonl
+```
+
+Each output file is `.jsonl`; every row is a JSON object with decimal amounts as strings.
+
+**4. Medium volume:**
+
+```bash
+fbx gen monthly-close --seed 1 --period 2026-01 --volume medium --out ./output-medium
+```
+
+**5. Specifying an explicit output directory:**
+
+```bash
+fbx gen monthly-close --seed 42 --period 2026-03 --volume small --out /tmp/march-close
+```
+
+## Output
+
+All files are written under `--out`. CSV files are RFC 4180, UTF-8, `\n` line endings.
+
+**Both bundles:**
+
+| File | Purpose |
+|---|---|
+| `coa.csv` | Chart of accounts — all account codes and types. |
+| `journal_entries.csv` | Entry headers — one row per journal entry. |
+| `gl.csv` | General ledger lines — one row per debit or credit. |
+| `bank_statement.csv` | Cash account postings with clearing lag. |
+| `customers.csv` | Customer master records. |
+| `invoices.csv` | Sales invoice line items. |
+| `customer_payments.csv` | AR payments applied to invoices. |
+| `vendors.csv` | Vendor master records. |
+| `bills.csv` | Vendor bill line items. |
+| `bill_payments.csv` | AP disbursements. |
+| `expense_reports.csv` | Expense reports with line items. |
+| `manifest.json` | Run metadata and file hashes (see below). |
+
+**Stress-test only:**
+
+| File | Purpose |
+|---|---|
+| `truth.json` | Ground truth of every injected anomaly — type, entry ID, and detail. |
+
+**`manifest.json`** records the seed, bundle, period, volume, format, fbx version, row counts per file, and a SHA-256 hash of each output file. The hashes let callers verify that a dataset has not been modified after generation and confirm byte-identical reproduction across machines.
+
+**Decimal format:** Every monetary column is decimal text with exactly 9 fractional digits (e.g. `100.000000000`). No float representation, no scientific notation, no thousands separator.
 
 ## Determinism
 
-Same `--seed` + bundle + period + version → byte-identical output across runs, OSes, and architectures. The CI golden-fixture test enforces this for both bundles at small volume on linux/amd64, linux/arm64, darwin/arm64, and windows/amd64.
+The same `--seed`, bundle, `--period`, `--volume`, and fbx version produce byte-identical output across runs, operating systems, and CPU architectures. This is enforced by five invariants in the generation path:
 
-## Exit codes
+1. Single seeded PCG RNG (`math/rand/v2`) — no global state.
+2. `shopspring/decimal` for all monetary arithmetic — no floating-point.
+3. No wall-clock reads in the generation path — all timestamps derive from `--period`.
+4. No map-iteration ordering in output paths — sorted before use.
+5. No goroutines in v0.1 — single-threaded, sequential pipeline.
 
-| Code | Meaning |
+The CI golden-fixture test verifies byte-identical output for both bundles at `small` volume across linux/amd64, linux/arm64, darwin/arm64, and windows/amd64.
+
+## Test data
+
+The committed golden fixtures are the canonical reference outputs for `--seed 1 --period 2026-01 --volume small`:
+
+- `testdata/golden/monthly-close/2026-01/small/`
+- `testdata/golden/recon-stress-test/2026-01/small/`
+
+To regenerate them locally and diff:
+
+```bash
+go test ./... -run TestGolden -update
+git diff testdata/golden/
+```
+
+The `-update` flag overwrites the fixtures in place. A clean diff confirms your build is deterministic against the committed reference.
+
+## Development
+
+```bash
+go test ./... -race   # full test suite with race detector
+go vet ./...          # static analysis
+gofmt -d .            # formatting check (must produce no output)
+```
+
+Regenerate golden fixtures:
+
+```bash
+go test ./... -run TestGolden -update
+```
+
+## Documentation
+
+| Path | Contents |
 |---|---|
-| `0` | Success |
-| `1` | Configuration or input error |
-| `2` | Invariant violation or I/O error (nothing written) |
-
-## Repo map
-
-| Path | What lives here |
-|---|---|
-| `cmd/fbx/` | CLI entry point |
-| `internal/gen/` | CoA, RNG, event generation, templates, projection, bundle dispatch |
-| `internal/invariant/` | Four write-time invariant checks |
-| `internal/writer/` | CSV + JSONL streaming writers, manifest, truth.json |
-| `testdata/golden/` | Determinism golden fixtures (committed) |
-| `architecture/` | Technical architecture; `OVERVIEW.md` is the canonical tech spec |
-| `docs/` | Thesis, product spec, narrative docs |
-| `plans/` | Roadmap and implementation phasing |
-| `.agents/` | Engineer and reviewer agent personas |
-
-## License
-
-TBD — MIT vs Apache-2.0. See [architecture/OVERVIEW.md](architecture/OVERVIEW.md) for the open question.
+| `architecture/OVERVIEW.md` | Canonical CLI spec: flags, exit codes, output format, invariants. |
+| `architecture/architecture.md` | Internal design: packages, pipeline, type definitions. |
+| `docs/thesis.md` | Problem statement and design rationale. |
+| `docs/product.md` | Product spec and audience. |
+| `plans/roadmap.md` | v0.2+ planned features and out-of-scope items. |
