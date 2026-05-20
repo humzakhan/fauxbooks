@@ -13,7 +13,7 @@ func smallInput(t *testing.T) ([]JournalEntry, []JournalLine, map[string]Account
 	coa := IndexCoA(DefaultCoA())
 	rng := NewRNG(1)
 	period := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	events, err := Generate(rng, period, "small", defaultMonthlyCloseMix())
+	events, err := Generate(rng, period, "small", MonthlyClose().Mix)
 	if err != nil {
 		t.Fatalf("Generate: %v", err)
 	}
