@@ -16,7 +16,7 @@ Spec phase — v0.1 in progress, no Go code committed yet.
 | `architecture/adrs/` | Architecture Decision Records (empty) |
 | `plans/` | Roadmap and implementation phasing |
 | `.agents/` | Engineer and reviewer agent personas (used by Claude Code, Codex, Cursor, etc.) |
-| `skills/` | Shared Claude Code / Codex skill packs (workflow + Go-specific). `.claude/skills` and `.codex/skills` are symlinks into this directory. |
+| `.agents/skills/` | Shared Claude Code / Codex skill packs (workflow + Go-specific). `.claude/skills` and `.codex/skills` are symlinks into this directory. |
 
 ## Quick links
 
@@ -29,7 +29,7 @@ Spec phase — v0.1 in progress, no Go code committed yet.
 
 ## Working with agents
 
-The repo uses a three-tier orchestrator pattern: Opus orchestrates (decomposes tasks, owns sequencing and integration), Sonnet handles context-heavy drafting and analysis, and Haiku handles mechanical operations (reformatting, renaming, repetitive edits). The engineer and reviewer agent personas in `.agents/` encode the expectations for each role. See `skills/orchestrator-mode/SKILL.md` for the full orchestration protocol. Skills are shared between Claude Code and Codex via symlinks: `.claude/skills` and `.codex/skills` both point to `skills/`, so any skill pack added once is available to both harnesses without duplication.
+The repo uses a three-tier orchestrator pattern: Opus orchestrates (decomposes tasks, owns sequencing and integration), Sonnet handles context-heavy drafting and analysis, and Haiku handles mechanical operations (reformatting, renaming, repetitive edits). The engineer and reviewer agent personas in `.agents/` encode the expectations for each role. See `.agents/skills/orchestrator-mode/SKILL.md` for the full orchestration protocol. Skills are shared between Claude Code and Codex via symlinks: `.claude/skills` and `.codex/skills` both point to `.agents/skills/`, so any skill pack added once is available to both harnesses without duplication.
 
 ## License
 

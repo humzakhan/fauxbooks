@@ -98,7 +98,7 @@ func TestGoldenMonthlyClose(t *testing.T) {
 ```
 
 Regenerate: `go test ./... -run TestGolden -update`. Commit fixture updates atomically
-with the code change that caused the drift — see `skills/engineering-workflow/SKILL.md`
+with the code change that caused the drift — see `.agents/skills/engineering-workflow/SKILL.md`
 §Commit Hygiene.
 
 ---
