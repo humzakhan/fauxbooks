@@ -31,7 +31,7 @@ This generates a clean month-end close dataset for January 2026 into `./output/`
 ### `fbx gen <bundle>`
 
 ```
-fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl]
+fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out DIR] [--format csv|jsonl|xlsx]
 ```
 
 | Flag | Type | Default | Description |
@@ -40,7 +40,7 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 | `--period` | YYYY-MM | required | Target month. All timestamps derive from this value. |
 | `--volume` | string | `small` | Dataset size tier: `small`, `medium`, or `large`. |
 | `--out` | string | `.` | Output directory. Created if it does not exist. |
-| `--format` | string | `csv` | Output format: `csv` or `jsonl`. |
+| `--format` | string | `csv` | Output format: `csv`, `jsonl`, or `xlsx`. XLSX writes a single `fauxbooks.xlsx` workbook. |
 
 **Exit codes:**
 
@@ -57,6 +57,8 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 PR-V01 adds four derived financial report files per run (Profit & Loss, Balance Sheet, Cash Flow, Trial Balance), each written in both CSV and JSONL formats. These are computed from the event-sourced dataset by the new `internal/report` package and written by streaming writers in `internal/writer`.
 
 PR-V02 adds three more derived report types: AR/AP aging by bucket (`ar-aging.csv/.jsonl`, `ap-aging.csv/.jsonl`), per-customer statements (`customer-statements.csv/.jsonl`), and a check register of cash disbursements (`check-register.csv/.jsonl`). Party attribution uses deterministic FNV-1a hashing — no new RNG draws.
+
+PR-V03 adds `--format xlsx`: a single `fauxbooks.xlsx` workbook per run with one sheet per document. Decimal values are written as inline-string cells to preserve precision. All ZIP-entry timestamps are pinned to the period start for byte-identical binary output across runs.
 
 ## Bundles
 
