@@ -20,20 +20,6 @@ func newCSVWriter(w io.Writer) *csv.Writer {
 	return cw
 }
 
-// writeCSV writes header then rows via cw, flushes, and checks for errors.
-func writeCSV(cw *csv.Writer, header []string, rows [][]string) error {
-	if err := cw.Write(header); err != nil {
-		return fmt.Errorf("csv header: %w", err)
-	}
-	for _, row := range rows {
-		if err := cw.Write(row); err != nil {
-			return fmt.Errorf("csv row: %w", err)
-		}
-	}
-	cw.Flush()
-	return cw.Error()
-}
-
 // WriteCoA writes the chart of accounts to w as CSV.
 // Columns: code, name, type, normal_balance.
 // Rows are sorted by account code for deterministic output.
@@ -46,16 +32,21 @@ func WriteCoA(w io.Writer, coa map[string]gen.Account) (n int, err error) {
 	}
 	sort.Strings(codes)
 
-	rows := make([][]string, len(codes))
-	for i, code := range codes {
-		a := coa[code]
-		rows[i] = []string{a.Code, a.Name, string(a.Type), a.NormalBalance}
+	if err = cw.Write([]string{"code", "name", "type", "normal_balance"}); err != nil {
+		return 0, fmt.Errorf("WriteCoA: csv header: %w", err)
 	}
-
-	if err = writeCSV(cw, []string{"code", "name", "type", "normal_balance"}, rows); err != nil {
+	for _, code := range codes {
+		a := coa[code]
+		if err = cw.Write([]string{a.Code, a.Name, string(a.Type), a.NormalBalance}); err != nil {
+			return 0, fmt.Errorf("WriteCoA: csv row: %w", err)
+		}
+		n++
+	}
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("WriteCoA: %w", err)
 	}
-	return len(rows), nil
+	return n, nil
 }
 
 // WriteJournalEntries writes journal entry headers to w as CSV.
@@ -63,21 +54,27 @@ func WriteCoA(w io.Writer, coa map[string]gen.Account) (n int, err error) {
 func WriteJournalEntries(w io.Writer, entries []gen.JournalEntry) (n int, err error) {
 	cw := newCSVWriter(w)
 
-	rows := make([][]string, len(entries))
+	if err = cw.Write([]string{"row_num", "entry_id", "occurred_at", "description", "source_event_id"}); err != nil {
+		return 0, fmt.Errorf("WriteJournalEntries: csv header: %w", err)
+	}
 	for i, e := range entries {
-		rows[i] = []string{
+		row := []string{
 			strconv.Itoa(i + 1),
 			e.EntryID,
 			e.OccurredAt.Format("2006-01-02T15:04:05.999999999Z"),
 			e.Description,
 			e.SourceEventID,
 		}
+		if err = cw.Write(row); err != nil {
+			return 0, fmt.Errorf("WriteJournalEntries: csv row: %w", err)
+		}
+		n++
 	}
-
-	if err = writeCSV(cw, []string{"row_num", "entry_id", "occurred_at", "description", "source_event_id"}, rows); err != nil {
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("WriteJournalEntries: %w", err)
 	}
-	return len(rows), nil
+	return n, nil
 }
 
 // WriteGL writes general ledger rows to w as CSV.
@@ -85,9 +82,11 @@ func WriteJournalEntries(w io.Writer, entries []gen.JournalEntry) (n int, err er
 func WriteGL(w io.Writer, gl []gen.GLRow) (n int, err error) {
 	cw := newCSVWriter(w)
 
-	rows := make([][]string, len(gl))
-	for i, r := range gl {
-		rows[i] = []string{
+	if err = cw.Write([]string{"row_num", "entry_id", "line_id", "occurred_at", "account_code", "debit", "credit"}); err != nil {
+		return 0, fmt.Errorf("WriteGL: csv header: %w", err)
+	}
+	for _, r := range gl {
+		row := []string{
 			strconv.Itoa(r.RowNum),
 			r.EntryID,
 			r.LineID,
@@ -96,12 +95,16 @@ func WriteGL(w io.Writer, gl []gen.GLRow) (n int, err error) {
 			r.Debit,
 			r.Credit,
 		}
+		if err = cw.Write(row); err != nil {
+			return 0, fmt.Errorf("WriteGL: csv row: %w", err)
+		}
+		n++
 	}
-
-	if err = writeCSV(cw, []string{"row_num", "entry_id", "line_id", "occurred_at", "account_code", "debit", "credit"}, rows); err != nil {
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("WriteGL: %w", err)
 	}
-	return len(rows), nil
+	return n, nil
 }
 
 // WriteBankStatement writes bank statement rows to w as CSV.
@@ -109,9 +112,11 @@ func WriteGL(w io.Writer, gl []gen.GLRow) (n int, err error) {
 func WriteBankStatement(w io.Writer, bank []gen.BankRow) (n int, err error) {
 	cw := newCSVWriter(w)
 
-	rows := make([][]string, len(bank))
-	for i, r := range bank {
-		rows[i] = []string{
+	if err = cw.Write([]string{"row_num", "entry_id", "line_id", "occurred_at", "account_code", "debit", "credit"}); err != nil {
+		return 0, fmt.Errorf("WriteBankStatement: csv header: %w", err)
+	}
+	for _, r := range bank {
+		row := []string{
 			strconv.Itoa(r.RowNum),
 			r.EntryID,
 			r.LineID,
@@ -120,12 +125,16 @@ func WriteBankStatement(w io.Writer, bank []gen.BankRow) (n int, err error) {
 			r.Debit,
 			r.Credit,
 		}
+		if err = cw.Write(row); err != nil {
+			return 0, fmt.Errorf("WriteBankStatement: csv row: %w", err)
+		}
+		n++
 	}
-
-	if err = writeCSV(cw, []string{"row_num", "entry_id", "line_id", "occurred_at", "account_code", "debit", "credit"}, rows); err != nil {
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("WriteBankStatement: %w", err)
 	}
-	return len(rows), nil
+	return n, nil
 }
 
 // writeSubLedger is the common implementation for all sub-ledger CSV writers.
@@ -133,9 +142,11 @@ func WriteBankStatement(w io.Writer, bank []gen.BankRow) (n int, err error) {
 func writeSubLedger(w io.Writer, rows []gen.SubLedgerRow, label string) (n int, err error) {
 	cw := newCSVWriter(w)
 
-	out := make([][]string, len(rows))
-	for i, r := range rows {
-		out[i] = []string{
+	if err = cw.Write([]string{"row_num", "entry_id", "ref_id", "occurred_at", "amount", "sub_ledger_type"}); err != nil {
+		return 0, fmt.Errorf("%s: csv header: %w", label, err)
+	}
+	for _, r := range rows {
+		row := []string{
 			strconv.Itoa(r.RowNum),
 			r.EntryID,
 			r.RefID,
@@ -143,12 +154,16 @@ func writeSubLedger(w io.Writer, rows []gen.SubLedgerRow, label string) (n int, 
 			r.Amount,
 			r.SubLedgerType,
 		}
+		if err = cw.Write(row); err != nil {
+			return 0, fmt.Errorf("%s: csv row: %w", label, err)
+		}
+		n++
 	}
-
-	if err = writeCSV(cw, []string{"row_num", "entry_id", "ref_id", "occurred_at", "amount", "sub_ledger_type"}, out); err != nil {
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("%s: %w", label, err)
 	}
-	return len(out), nil
+	return n, nil
 }
 
 // WriteInvoices writes sale invoice sub-ledger rows to w as CSV.
@@ -178,16 +193,24 @@ func WriteExpenseReports(w io.Writer, rows []gen.SubLedgerRow) (n int, err error
 
 // writePartyMaster is the common implementation for customer and vendor CSV writers.
 // Columns: id, name, email, phone, address, city, state, zip.
-func writePartyMaster(w io.Writer, id, name, email, phone, address, city, state, zip []string, label string) (int, error) {
+func writePartyMaster(w io.Writer, id, name, email, phone, address, city, state, zip []string, label string) (n int, err error) {
 	cw := newCSVWriter(w)
-	rows := make([][]string, len(id))
-	for i := range id {
-		rows[i] = []string{id[i], name[i], email[i], phone[i], address[i], city[i], state[i], zip[i]}
+
+	if err = cw.Write([]string{"id", "name", "email", "phone", "address", "city", "state", "zip"}); err != nil {
+		return 0, fmt.Errorf("%s: csv header: %w", label, err)
 	}
-	if err := writeCSV(cw, []string{"id", "name", "email", "phone", "address", "city", "state", "zip"}, rows); err != nil {
+	for i := range id {
+		row := []string{id[i], name[i], email[i], phone[i], address[i], city[i], state[i], zip[i]}
+		if err = cw.Write(row); err != nil {
+			return 0, fmt.Errorf("%s: csv row: %w", label, err)
+		}
+		n++
+	}
+	cw.Flush()
+	if err = cw.Error(); err != nil {
 		return 0, fmt.Errorf("%s: %w", label, err)
 	}
-	return len(rows), nil
+	return n, nil
 }
 
 // WriteCustomers writes the customer master to w as CSV.
