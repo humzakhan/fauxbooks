@@ -49,6 +49,8 @@ func run(args []string) int {
 		return runVerify(args[1:])
 	case "convert":
 		return runConvert(args[1:])
+	case "mcp":
+		return runMCP(args[1:])
 	case "version":
 		fmt.Println(Version)
 		return 0

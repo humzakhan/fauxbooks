@@ -73,6 +73,8 @@ PR-V06 adds `fbx convert --in <path> --out <path>`: converts a single file betwe
 
 PR-V07 adds YAML-configurable custom bundles and templates. `--bundle-config <path.yaml>` loads an alternative event mix and volume-scale map, bypassing the built-in bundle name requirement. `--templates-config <path.yaml>` loads custom journal-entry template definitions (validated at startup; v0.2 supports `amount_field: amount` only). Both flags are optional and independent; omitting them uses the built-in behaviour unchanged. The built-in `monthly-close` and `recon-stress-test` bundles produce byte-identical output after this refactor — RNG call order is preserved exactly.
 
+PR-V08 adds `fbx mcp`: a JSON-RPC 2.0 server over stdio implementing the Model Context Protocol. One JSON-RPC request per line on stdin; one response per line on stdout; flush after every response. Exposes four typed tools (`fbx_bundle_list`, `fbx_docs_list`, `fbx_gen`, `fbx_verify`) in fixed alphabetical order. All generation and verification logic delegates to the same internal packages as the CLI subcommands — no separate code paths.
+
 ### `fbx verify <dir>`
 
 ```
@@ -86,6 +88,44 @@ Reads the CSV output in `<dir>` and re-runs invariant checks. Exit codes:
 | `0` | All invariants pass — dataset is consistent. |
 | `1` | I/O or parse error (directory not found, required CSV missing, malformed decimal). |
 | `2` | At least one invariant violated — detail printed to stderr with invariant number and entry ID. |
+
+### `fbx mcp`
+
+```
+fbx mcp
+```
+
+Starts a JSON-RPC 2.0 MCP server on stdin/stdout. One request per line; one response per line. Exits 0 when stdin is closed (EOF). Errors within tool calls are returned as `{"ok": false, "error": "..."}` in the result field; server-level panics go to stderr.
+
+**Supported methods:**
+
+| Method | Description |
+|---|---|
+| `initialize` | MCP handshake. Returns `protocolVersion`, `capabilities`, and `serverInfo`. |
+| `tools/list` | Returns the 4 tools in fixed alphabetical order, each with `name`, `description`, and `inputSchema`. |
+| `tools/call` | Dispatches to the named tool with the given `arguments`. |
+
+**Tools:**
+
+| Tool | Parameters | Returns |
+|---|---|---|
+| `fbx_bundle_list` | none | `{"bundles":[{"name":"...","description":"..."},...]}` |
+| `fbx_docs_list` | none | `{"documents":["coa.csv",...]}` — canonical CSV file list for a monthly-close run |
+| `fbx_gen` | `bundle`, `seed`, `period`, `volume`, `out_dir`, `format` (optional, default `csv`) | `{"ok":true,"out_dir":"..."}` or `{"ok":false,"error":"..."}` |
+| `fbx_verify` | `dir` | `{"ok":true}` or `{"ok":false,"invariant":N,"detail":"..."}` |
+
+**Example — list tools:**
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | fbx mcp
+```
+
+**Example — generate via MCP:**
+
+```bash
+tmpdir=$(mktemp -d)
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"fbx_gen","arguments":{"bundle":"monthly-close","seed":1,"period":"2026-01","volume":"small","out_dir":"'"$tmpdir"'"}}}' | fbx mcp
+```
 
 ### `fbx convert`
 
