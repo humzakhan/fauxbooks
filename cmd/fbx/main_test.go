@@ -183,25 +183,13 @@ func TestUnknownSubcommand(t *testing.T) {
 	}
 }
 
-// TestInvariantAbort verifies that an invariant violation causes exit 2 and
-// leaves the output directory empty.
+// TestInvariantAbort verifies that invariant.Check detects an unbalanced
+// Dataset and returns a gen.InvariantError with the expected invariant number.
 //
-// Approach: Option 1 (in-process invariant.Check path). We construct a
-// gen.Dataset with a deliberate invariant-1 violation — one journal entry
-// whose debits do not equal its credits — and assert that invariant.Check
-// returns a gen.InvariantError. This directly exercises the code path in
-// runGen that returns exit 2 and writes nothing, without the fragility of a
-// chmod-unwritable-directory approach (which is unreliable under CI root
-// users). A complementary assertion verifies that run() itself returns 2 when
-// passed a valid --period but an out-dir whose parent cannot be created (the
-// MkdirAll failure path), ensuring the exit-2 contract is tested end-to-end
-// at the unit level as well.
-//
-// The in-process path is preferred over a subprocess for this case to avoid
-// the binary-build overhead and the chmod-root-user reliability gap.
+// We call invariant.Check directly (in-process) rather than spawning a
+// subprocess because the alternative — making an output directory unwritable
+// via chmod — is unreliable when tests run as root in CI containers.
 func TestInvariantAbort(t *testing.T) {
-	outDir := t.TempDir()
-
 	// Construct a Dataset with an unbalanced journal entry (invariant 1 violated):
 	// one entry with a debit of 100 but no corresponding credit.
 	// Monetary amounts use decimal.Decimal per the no-float64-for-money rule.
@@ -237,15 +225,5 @@ func TestInvariantAbort(t *testing.T) {
 	}
 	if ie.Invariant != 1 {
 		t.Errorf("expected invariant 1 violation, got invariant %d", ie.Invariant)
-	}
-
-	// Verify no files were written to outDir (the invariant check precedes all I/O
-	// in runGen, so a real run that fails here must not create any output files).
-	entries, err := os.ReadDir(outDir)
-	if err != nil {
-		t.Fatalf("ReadDir: %v", err)
-	}
-	if len(entries) != 0 {
-		t.Errorf("expected empty outDir after invariant abort, found %d entries", len(entries))
 	}
 }
