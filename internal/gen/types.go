@@ -102,8 +102,98 @@ type Account struct {
 	NormalBalance string
 }
 
+// GLRow is one row in the general ledger projection.
+// Row count equals len(Lines); every journal line produces exactly one GL row.
+type GLRow struct {
+	// RowNum is the 1-based sequential position assigned after sorting by composite key.
+	RowNum int
+
+	// EntryID is the parent journal entry identifier.
+	EntryID string
+
+	// LineID is the source journal line identifier.
+	LineID string
+
+	// OccurredAt is the timestamp of the parent journal entry.
+	OccurredAt string // RFC3339Nano
+
+	// AccountCode is the account referenced by the journal line.
+	AccountCode string
+
+	// Debit is the debit amount for this line; zero string when the leg is a credit.
+	Debit string // decimal text, 9 fractional digits
+
+	// Credit is the credit amount for this line; zero string when the leg is a debit.
+	Credit string // decimal text, 9 fractional digits
+}
+
+// BankRow is one row in the bank statement projection.
+// Only journal lines posted to cash account codes produce bank rows.
+type BankRow struct {
+	// RowNum is the 1-based sequential position within the bank statement.
+	RowNum int
+
+	// EntryID is the parent journal entry identifier.
+	EntryID string
+
+	// LineID is the source journal line identifier.
+	LineID string
+
+	// OccurredAt is the timestamp of the parent journal entry.
+	OccurredAt string // RFC3339Nano
+
+	// AccountCode is the cash account code.
+	AccountCode string
+
+	// Debit is the cash debit (inflow) amount; zero string when this is an outflow.
+	Debit string // decimal text, 9 fractional digits
+
+	// Credit is the cash credit (outflow) amount; zero string when this is an inflow.
+	Credit string // decimal text, 9 fractional digits
+}
+
+// SubLedgerRow is one row in a sub-ledger document.
+// Every sub-ledger row references an existing journal entry (invariant 4).
+type SubLedgerRow struct {
+	// RowNum is the 1-based sequential position within this sub-ledger.
+	RowNum int
+
+	// EntryID is the journal entry identifier for this sub-ledger record.
+	EntryID string
+
+	// RefID is the customer or vendor master reference (e.g. "ref-001").
+	RefID string
+
+	// OccurredAt is the timestamp of the source event.
+	OccurredAt string // RFC3339Nano
+
+	// Amount is the monetary amount in decimal text with 9 fractional digits.
+	Amount string
+
+	// SubLedgerType classifies the sub-ledger document (e.g. "invoice", "bill").
+	SubLedgerType string
+}
+
+// SubLedgerSet holds the complete set of sub-ledger projections for a run.
+type SubLedgerSet struct {
+	// Invoices holds sub-ledger rows for sale invoice events.
+	Invoices []SubLedgerRow
+
+	// CustomerPayments holds sub-ledger rows for customer payment events.
+	CustomerPayments []SubLedgerRow
+
+	// Bills holds sub-ledger rows for vendor bill events.
+	Bills []SubLedgerRow
+
+	// BillPayments holds sub-ledger rows for bill payment events.
+	BillPayments []SubLedgerRow
+
+	// ExpenseReports holds sub-ledger rows for expense report events.
+	ExpenseReports []SubLedgerRow
+}
+
 // Dataset is the full in-memory dataset produced by a generation run.
-// All four slices are populated before any write or invariant check occurs.
+// All slices are populated before any write or invariant check occurs.
 type Dataset struct {
 	// Entries is the complete list of journal entry headers.
 	Entries []JournalEntry
@@ -113,6 +203,18 @@ type Dataset struct {
 
 	// CoA is the chart of accounts index for this run, keyed by account code.
 	CoA map[string]Account
+
+	// GL is the general ledger projection (one row per journal line).
+	GL []GLRow
+
+	// Bank is the bank statement projection (one row per cash-account journal line).
+	Bank []BankRow
+
+	// SubLedger is the sub-ledger projection set.
+	SubLedger SubLedgerSet
+
+	// Manifest records run identity, row counts, and file hashes (hashes populated in PR-07).
+	Manifest Manifest
 }
 
 // Manifest records run identity, row counts, and per-file SHA-256 hashes.
