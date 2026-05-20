@@ -6,7 +6,8 @@ This tree is the technical architecture for fauxbooks. `OVERVIEW.md` is the cano
 
 | Path | What lives here |
 |---|---|
-| [`OVERVIEW.md`](OVERVIEW.md) | Canonical tech spec: stack, build layout, invariants, CLI, output format, determinism model |
+| [`OVERVIEW.md`](OVERVIEW.md) | Canonical tech spec: stack, invariants, CLI, output format, determinism model |
+| [`architecture.md`](architecture.md) | v0.1 internal design: pipeline, packages, key types, error and memory model |
 | [`subsystems/`](subsystems/) | Per-package design docs (one per `internal/...` package). Populated as v0.1 packages land. |
 | [`adrs/`](adrs/) | Architecture Decision Records. ADR-0001 onward as decisions are made. |
 
@@ -24,14 +25,11 @@ Five properties enforced at write time. Any failure exits non-zero and writes no
 
 ## Planned subsystem docs
 
-One doc per `internal/` package. Each will be added when the package implementation begins.
+One doc per package in the v0.1 design (see [`architecture.md`](architecture.md) §Packages for rationale on the 4-package layout). Each doc will be added when the package implementation begins.
 
 | Package | Scope | Status |
 |---|---|---|
-| `internal/coa` | Chart of accounts registry — account codes, types, hierarchy | planned |
-| `internal/events` | Event-stream generator — business event types and sequencing | planned |
-| `internal/templates` | Balanced-entry templates per event type | planned |
-| `internal/project` | Projection engine — GL, bank statement, and sub-ledger views over the event stream | planned |
-| `internal/invariant` | Write-time invariant checker — runs all five invariants before any file is written | planned |
-| `internal/writer` | CSV and JSONL serializers — streaming, decimal-preserving | planned |
-| `internal/rng` | Seeded RNG wrapper — PCG via `math/rand/v2`, deterministic seeding contract | planned |
+| `cmd/fbx` | CLI entry, flag parsing, top-level orchestration, exit codes | planned |
+| `internal/gen` | CoA, seeded RNG, event generation, template expansion, projection, bundle dispatch | planned |
+| `internal/invariant` | Write-time invariant checker — runs the four invariants before any file is written | planned |
+| `internal/writer` | CSV and JSONL streaming writers, decimal formatting, manifest + SHA-256 hashing | planned |
