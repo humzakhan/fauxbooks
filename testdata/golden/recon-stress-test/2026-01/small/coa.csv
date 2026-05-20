@@ -1,0 +1,52 @@
+code,name,type,normal_balance
+1000,Cash and Cash Equivalents,asset,debit
+1010,Checking Account,asset,debit
+1020,Savings Account,asset,debit
+1030,Petty Cash,asset,debit
+1100,Accounts Receivable,asset,debit
+1110,Allowance for Doubtful Accounts,asset,credit
+1200,Inventory,asset,debit
+1300,Prepaid Expenses,asset,debit
+1400,Other Current Assets,asset,debit
+1500,Property Plant and Equipment,asset,debit
+1510,Accumulated Depreciation,asset,credit
+1600,Intangible Assets,asset,debit
+1610,Accumulated Amortization,asset,credit
+1700,Other Non-Current Assets,asset,debit
+2000,Accounts Payable,liability,credit
+2100,Accrued Liabilities,liability,credit
+2110,Accrued Salaries and Wages,liability,credit
+2120,Accrued Interest Payable,liability,credit
+2200,Short-Term Notes Payable,liability,credit
+2300,Deferred Revenue,liability,credit
+2400,Sales Tax Payable,liability,credit
+2500,Income Tax Payable,liability,credit
+2600,Long-Term Debt,liability,credit
+2700,Other Non-Current Liabilities,liability,credit
+3000,Common Stock,equity,credit
+3100,Additional Paid-In Capital,equity,credit
+3200,Retained Earnings,equity,credit
+3300,Dividends Paid,equity,debit
+3400,Treasury Stock,equity,debit
+3500,Accumulated Other Comprehensive Income,equity,credit
+4000,Sales Revenue,revenue,credit
+4100,Service Revenue,revenue,credit
+4200,Interest Income,revenue,credit
+4300,Other Income,revenue,credit
+4400,Sales Returns and Allowances,revenue,debit
+4500,Sales Discounts,revenue,debit
+5000,Cost of Goods Sold,expense,debit
+5100,Salaries and Wages Expense,expense,debit
+5110,Payroll Tax Expense,expense,debit
+5200,Rent Expense,expense,debit
+5210,Utilities Expense,expense,debit
+5220,Office Supplies Expense,expense,debit
+5300,Travel and Entertainment Expense,expense,debit
+5310,Meals and Entertainment Expense,expense,debit
+5400,Depreciation Expense,expense,debit
+5410,Amortization Expense,expense,debit
+5500,Insurance Expense,expense,debit
+5600,Professional Fees Expense,expense,debit
+5700,Advertising and Marketing Expense,expense,debit
+5800,Interest Expense,expense,debit
+5900,Other Operating Expenses,expense,debit

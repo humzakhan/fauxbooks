@@ -8,8 +8,17 @@ on:
 
 jobs:
   build-test:
-    name: build / vet / fmt / test
-    runs-on: ubuntu-latest
+    name: build / vet / fmt / test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest      # linux/amd64
+          - ubuntu-24.04-arm   # linux/arm64  (GitHub-hosted ARM runner, GA May 2024)
+          - macos-14           # darwin/arm64 (M1 runner)
+          - windows-latest     # windows/amd64
 
     steps:
       - name: Checkout
@@ -26,7 +35,8 @@ jobs:
       - name: go vet
         run: go vet ./...
 
-      - name: gofmt
+      - name: gofmt (unix)
+        if: runner.os != 'Windows'
         run: |
           out=$(gofmt -d .)
           if [ -n "$out" ]; then
@@ -35,5 +45,30 @@ jobs:
             exit 1
           fi
 
+      - name: gofmt (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $out = gofmt -d .
+          if ($out) {
+            Write-Error "gofmt found formatting issues:`n$out"
+            exit 1
+          }
+
       - name: go test -race
         run: go test ./... -race
+
+      - name: golden fixture smoke (unix)
+        if: runner.os != 'Windows'
+        run: |
+          go run ./cmd/fbx gen monthly-close --seed 1 --period 2026-01 --volume small --out "$RUNNER_TEMP/mc"
+          go run ./cmd/fbx gen recon-stress-test --seed 1 --period 2026-01 --volume small --out "$RUNNER_TEMP/st"
+          test -f "$RUNNER_TEMP/st/truth.json"
+
+      - name: golden fixture smoke (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          go run ./cmd/fbx gen monthly-close --seed 1 --period 2026-01 --volume small --out "$env:RUNNER_TEMP\mc"
+          go run ./cmd/fbx gen recon-stress-test --seed 1 --period 2026-01 --volume small --out "$env:RUNNER_TEMP\st"
+          if (-not (Test-Path "$env:RUNNER_TEMP\st\truth.json")) { exit 1 }

@@ -50,19 +50,7 @@ func Run(cfg Config) (Dataset, error) {
 		return Dataset{}, fmt.Errorf("gen.Run: Project: %w", err)
 	}
 
-	manifest := Manifest{
-		Seed:   cfg.Seed,
-		Period: cfg.Period.Format("2006-01"),
-		Bundle: bundleName,
-		RowCounts: map[string]int{
-			"gl.csv":              len(gl),
-			"bank_statement.csv":  len(bank),
-			"journal_entries.csv": len(entries),
-		},
-		Hashes: map[string]string{},
-	}
-
-	return Dataset{
+	ds := Dataset{
 		CoA:       coa,
 		Entries:   entries,
 		Lines:     lines,
@@ -71,6 +59,32 @@ func Run(cfg Config) (Dataset, error) {
 		SubLedger: sub,
 		Customers: customers,
 		Vendors:   vendors,
-		Manifest:  manifest,
-	}, nil
+	}
+
+	// For stress bundles, inject anomalies after the standard pipeline.
+	// InjectStress deliberately violates invariants 1–3; the caller (cmd/fbx)
+	// must skip invariant.Check for stress bundles (gated on bundle.StressTest).
+	if b.StressTest {
+		var truthLog TruthLog
+		ds, truthLog, err = InjectStress(ds, rng)
+		if err != nil {
+			return Dataset{}, fmt.Errorf("gen.Run: InjectStress: %w", err)
+		}
+		ds.Truth = truthLog
+	}
+
+	manifest := Manifest{
+		Seed:   cfg.Seed,
+		Period: cfg.Period.Format("2006-01"),
+		Bundle: bundleName,
+		RowCounts: map[string]int{
+			"gl.csv":              len(ds.GL),
+			"bank_statement.csv":  len(ds.Bank),
+			"journal_entries.csv": len(ds.Entries),
+		},
+		Hashes: map[string]string{},
+	}
+	ds.Manifest = manifest
+
+	return ds, nil
 }

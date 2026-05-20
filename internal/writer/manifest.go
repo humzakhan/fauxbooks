@@ -188,6 +188,15 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 		results = append(results, result{name: fs.name, count: count, hash: hash})
 	}
 
+	// For stress bundles, write truth.json and include it in the manifest.
+	if ds.Truth != nil {
+		count, hash, werr := WriteTruth(outDir, ds)
+		if werr != nil {
+			return fmt.Errorf("writer.Write: truth.json: %w", werr)
+		}
+		results = append(results, result{name: "truth.json", count: count, hash: hash})
+	}
+
 	// Build row counts and hashes as sorted slices for deterministic JSON.
 	rowCounts := make([]fileRowCount, len(results))
 	hashes := make([]fileHash, len(results))

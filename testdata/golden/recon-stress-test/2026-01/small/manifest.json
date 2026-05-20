@@ -1,0 +1,107 @@
+{
+  "seed": 1,
+  "period": "2026-01",
+  "bundle": "recon-stress-test",
+  "volume": "small",
+  "format": "csv",
+  "row_counts": [
+    {
+      "name": "bank_statement.csv",
+      "count": 104
+    },
+    {
+      "name": "bill_payments.csv",
+      "count": 30
+    },
+    {
+      "name": "bills.csv",
+      "count": 22
+    },
+    {
+      "name": "coa.csv",
+      "count": 51
+    },
+    {
+      "name": "customer_payments.csv",
+      "count": 19
+    },
+    {
+      "name": "customers.csv",
+      "count": 10
+    },
+    {
+      "name": "expense_reports.csv",
+      "count": 10
+    },
+    {
+      "name": "gl.csv",
+      "count": 333
+    },
+    {
+      "name": "invoices.csv",
+      "count": 13
+    },
+    {
+      "name": "journal_entries.csv",
+      "count": 150
+    },
+    {
+      "name": "truth.json",
+      "count": 7
+    },
+    {
+      "name": "vendors.csv",
+      "count": 10
+    }
+  ],
+  "file_sha256": [
+    {
+      "name": "bank_statement.csv",
+      "sha256": "b96c5b8f6e8ce900cb239c7de191c1dfdd105bae16375fe75d9804d6b6c20e58"
+    },
+    {
+      "name": "bill_payments.csv",
+      "sha256": "87b738bf9156154882ee11923962f2f56600fb3e2d8aedb4d43c9b393edda1fc"
+    },
+    {
+      "name": "bills.csv",
+      "sha256": "a69507333fb433ce2814330605718fe5875e43426bd7b705838ca7fcbf98b3f4"
+    },
+    {
+      "name": "coa.csv",
+      "sha256": "937c87bcd402787f46fd3a96f80b7b73cbace215554fce1b10b6c81009546d3c"
+    },
+    {
+      "name": "customer_payments.csv",
+      "sha256": "ecfc1654ad4e6f477f870e38b8d4c50d7cbe8d31da8cfe64af34c78b9fdb586b"
+    },
+    {
+      "name": "customers.csv",
+      "sha256": "a6bd383c564fc2735cbf6db7e34ad34429d4882fbe6f1fc3306742eb58736ad2"
+    },
+    {
+      "name": "expense_reports.csv",
+      "sha256": "e9edf5480bb00064c239be75957f15107eb702a03ecb28ca3bdd1a8b9b5ef18e"
+    },
+    {
+      "name": "gl.csv",
+      "sha256": "7c3296d338ec651c81ac24d2e5346abd3454d4fccf532488437c1452d5056572"
+    },
+    {
+      "name": "invoices.csv",
+      "sha256": "700fa9b6f6b4a28e2c115a8ce0aaf1f811c774e76cba8ee537b4fcd67f85172d"
+    },
+    {
+      "name": "journal_entries.csv",
+      "sha256": "166ef5f4db334a793479022d3987dcca023014ad6fc159c54cc065733b388c88"
+    },
+    {
+      "name": "truth.json",
+      "sha256": "2f5fbd2f6924477605502137346aa79c79c492aa96db1816fb0a682f3d7321f7"
+    },
+    {
+      "name": "vendors.csv",
+      "sha256": "03b8df7889c91524d805d069159bc48b13d467a720c83e7c9b18850d31810ede"
+    }
+  ]
+}

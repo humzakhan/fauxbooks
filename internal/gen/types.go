@@ -248,6 +248,23 @@ type Vendor struct {
 	Zip string
 }
 
+// TruthRecord describes one anomaly injected by InjectStress.
+// Every record has all three fields populated; no field is optional.
+type TruthRecord struct {
+	// Type classifies the anomaly: "timing_difference", "duplicate", or "orphan_bank_row".
+	Type string `json:"type"`
+
+	// EntryID is the journal entry or bank row identifier involved in the injection.
+	EntryID string `json:"entry_id"`
+
+	// Detail is a human-readable description of the injected anomaly.
+	Detail string `json:"detail"`
+}
+
+// TruthLog is the ordered list of injected anomalies for a recon-stress-test run.
+// It is sorted by (Type, EntryID) before write so truth.json is deterministic.
+type TruthLog []TruthRecord
+
 // Dataset is the full in-memory dataset produced by a generation run.
 // All slices are populated before any write or invariant check occurs.
 type Dataset struct {
@@ -277,6 +294,10 @@ type Dataset struct {
 
 	// Manifest records run identity, row counts, and file hashes (hashes populated by writer.Write).
 	Manifest Manifest
+
+	// Truth holds the injected anomaly log for recon-stress-test runs.
+	// Nil for standard bundles (StressTest: false).
+	Truth TruthLog
 }
 
 // Manifest records run identity, row counts, and per-file SHA-256 hashes.
