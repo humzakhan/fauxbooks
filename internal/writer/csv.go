@@ -175,3 +175,63 @@ func WriteBillPayments(w io.Writer, rows []gen.SubLedgerRow) (n int, err error) 
 func WriteExpenseReports(w io.Writer, rows []gen.SubLedgerRow) (n int, err error) {
 	return writeSubLedger(w, rows, "WriteExpenseReports")
 }
+
+// writePartyMaster is the common implementation for customer and vendor CSV writers.
+// Columns: id, name, email, phone, address, city, state, zip.
+func writePartyMaster(w io.Writer, id, name, email, phone, address, city, state, zip []string, label string) (int, error) {
+	cw := newCSVWriter(w)
+	rows := make([][]string, len(id))
+	for i := range id {
+		rows[i] = []string{id[i], name[i], email[i], phone[i], address[i], city[i], state[i], zip[i]}
+	}
+	if err := writeCSV(cw, []string{"id", "name", "email", "phone", "address", "city", "state", "zip"}, rows); err != nil {
+		return 0, fmt.Errorf("%s: %w", label, err)
+	}
+	return len(rows), nil
+}
+
+// WriteCustomers writes the customer master to w as CSV.
+func WriteCustomers(w io.Writer, customers []gen.Customer) (n int, err error) {
+	id := make([]string, len(customers))
+	name := make([]string, len(customers))
+	email := make([]string, len(customers))
+	phone := make([]string, len(customers))
+	address := make([]string, len(customers))
+	city := make([]string, len(customers))
+	state := make([]string, len(customers))
+	zip := make([]string, len(customers))
+	for i, c := range customers {
+		id[i] = c.ID
+		name[i] = c.Name
+		email[i] = c.Email
+		phone[i] = c.Phone
+		address[i] = c.Address
+		city[i] = c.City
+		state[i] = c.State
+		zip[i] = c.Zip
+	}
+	return writePartyMaster(w, id, name, email, phone, address, city, state, zip, "WriteCustomers")
+}
+
+// WriteVendors writes the vendor master to w as CSV.
+func WriteVendors(w io.Writer, vendors []gen.Vendor) (n int, err error) {
+	id := make([]string, len(vendors))
+	name := make([]string, len(vendors))
+	email := make([]string, len(vendors))
+	phone := make([]string, len(vendors))
+	address := make([]string, len(vendors))
+	city := make([]string, len(vendors))
+	state := make([]string, len(vendors))
+	zip := make([]string, len(vendors))
+	for i, v := range vendors {
+		id[i] = v.ID
+		name[i] = v.Name
+		email[i] = v.Email
+		phone[i] = v.Phone
+		address[i] = v.Address
+		city[i] = v.City
+		state[i] = v.State
+		zip[i] = v.Zip
+	}
+	return writePartyMaster(w, id, name, email, phone, address, city, state, zip, "WriteVendors")
+}
