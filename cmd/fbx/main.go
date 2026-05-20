@@ -12,11 +12,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
+	"github.com/humzakhan/fauxbooks/internal/invariant"
+	"github.com/humzakhan/fauxbooks/internal/writer"
 )
 
 func main() {
@@ -71,8 +74,36 @@ func runGen(args []string) int {
 		return 1
 	}
 
-	// PR-01: ParseConfig success is the full extent of gen dispatch.
-	// Full pipeline wiring (gen.Run → invariant.Check → writer.Write) is PR-08.
-	_ = cfg
+	// Ensure output directory exists before generating anything.
+	if err := os.MkdirAll(cfg.OutDir, 0755); err != nil {
+		fmt.Fprintf(os.Stderr, "fbx: cannot create output directory: %v\n", err)
+		return 2
+	}
+
+	// Step 1: run the full generation pipeline.
+	ds, err := gen.Run(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fbx: generation failed: %v\n", err)
+		return 2
+	}
+
+	// Step 2: check all invariants before writing any files.
+	// On invariant failure: print the violation and exit 2; nothing is written.
+	if err := invariant.Check(ds); err != nil {
+		var ie gen.InvariantError
+		if errors.As(err, &ie) {
+			fmt.Fprintf(os.Stderr, "fbx: invariant %d violated: %s\n", ie.Invariant, ie.Detail)
+		} else {
+			fmt.Fprintf(os.Stderr, "fbx: invariant check failed: %v\n", err)
+		}
+		return 2
+	}
+
+	// Step 3: write all output files.
+	if err := writer.Write(ds, cfg, cfg.OutDir); err != nil {
+		fmt.Fprintf(os.Stderr, "fbx: write failed: %v\n", err)
+		return 2
+	}
+
 	return 0
 }

@@ -109,6 +109,12 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 			{"coa.jsonl", func(w io.Writer) (int, error) {
 				return WriteCoAJSONL(w, ds.CoA)
 			}},
+			{"customers.jsonl", func(w io.Writer) (int, error) {
+				return WriteCustomersJSONL(w, ds.Customers)
+			}},
+			{"vendors.jsonl", func(w io.Writer) (int, error) {
+				return WriteVendorsJSONL(w, ds.Vendors)
+			}},
 			{"journal_entries.jsonl", func(w io.Writer) (int, error) {
 				return WriteJournalEntriesJSONL(w, ds.Entries)
 			}},
@@ -139,6 +145,12 @@ func Write(ds gen.Dataset, cfg gen.Config, outDir string) error {
 		files = []fileSpec{
 			{"coa.csv", func(w io.Writer) (int, error) {
 				return WriteCoA(w, ds.CoA)
+			}},
+			{"customers.csv", func(w io.Writer) (int, error) {
+				return WriteCustomers(w, ds.Customers)
+			}},
+			{"vendors.csv", func(w io.Writer) (int, error) {
+				return WriteVendors(w, ds.Vendors)
 			}},
 			{"journal_entries.csv", func(w io.Writer) (int, error) {
 				return WriteJournalEntries(w, ds.Entries)

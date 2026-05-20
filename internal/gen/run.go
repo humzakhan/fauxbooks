@@ -2,37 +2,6 @@ package gen
 
 import "fmt"
 
-// defaultMonthlyCloseMix returns the EventMix used for the monthly-close bundle.
-// PR-08 owns the Bundle struct; this function is the hook PR-08 will replace
-// with a lookup from bundle.go. Weights reflect a typical month-end close:
-// invoices and payments dominate, with smaller shares for bills, expenses,
-// payroll, and depreciation.
-func defaultMonthlyCloseMix() EventMix {
-	return EventMix{
-		EventTypeSaleInvoice:       10,
-		EventTypeCustomerPayment:   10,
-		EventTypeVendorBill:        10,
-		EventTypeBillPayment:       10,
-		EventTypeExpenseReport:     5,
-		EventTypePayroll:           5,
-		EventTypeDepreciation:      3,
-		EventTypeInventoryPurchase: 7,
-		EventTypeInventoryCOGS:     7,
-		EventTypeInterestIncome:    3,
-	}
-}
-
-// mixForBundle returns the EventMix for the given bundle name.
-// Returns ErrUnknownBundle for any name not built into this version.
-func mixForBundle(bundle string) (EventMix, error) {
-	switch bundle {
-	case "monthly-close", "":
-		return defaultMonthlyCloseMix(), nil
-	default:
-		return nil, fmt.Errorf("%w: %s", ErrUnknownBundle, bundle)
-	}
-}
-
 // Run executes the full internal/gen pipeline for the given Config and returns
 // a populated Dataset. It is a pure function of cfg: no file I/O, no
 // wall-clock reads, no goroutines. The returned Dataset has all four slices
@@ -41,17 +10,14 @@ func mixForBundle(bundle string) (EventMix, error) {
 // Pipeline: DefaultCoA → IndexCoA → NewRNG → Generate → Expand → Project.
 //
 // Manifest in the returned Dataset carries seed, period, bundle, and version
-// identity fields; file hashes are populated in PR-07.
+// identity fields; file hashes are populated by internal/writer during Write.
 func Run(cfg Config) (Dataset, error) {
-	// Resolve bundle → EventMix.
-	bundle := cfg.Bundle
-	if bundle == "" {
-		bundle = "monthly-close"
-	}
-	mix, err := mixForBundle(bundle)
+	// Resolve bundle → Bundle (includes EventMix).
+	b, err := bundleByName(cfg.Bundle)
 	if err != nil {
 		return Dataset{}, err
 	}
+	bundleName := b.Name
 
 	// Build CoA.
 	accounts := DefaultCoA()
@@ -60,8 +26,14 @@ func Run(cfg Config) (Dataset, error) {
 	// Seed RNG.
 	rng := NewRNG(cfg.Seed)
 
+	// Generate customer and vendor master records before events so that RefIDs
+	// in events reference a populated master. The master is deterministic because
+	// all draws come from the seeded RNG.
+	customers := GenerateCustomers(rng, customerCount)
+	vendors := GenerateVendors(rng, vendorCount)
+
 	// Generate events.
-	events, err := Generate(rng, cfg.Period, cfg.Volume, mix)
+	events, err := Generate(rng, cfg.Period, cfg.Volume, b.Mix)
 	if err != nil {
 		return Dataset{}, fmt.Errorf("gen.Run: Generate: %w", err)
 	}
@@ -81,7 +53,7 @@ func Run(cfg Config) (Dataset, error) {
 	manifest := Manifest{
 		Seed:   cfg.Seed,
 		Period: cfg.Period.Format("2006-01"),
-		Bundle: bundle,
+		Bundle: bundleName,
 		RowCounts: map[string]int{
 			"gl.csv":              len(gl),
 			"bank_statement.csv":  len(bank),
@@ -97,6 +69,8 @@ func Run(cfg Config) (Dataset, error) {
 		GL:        gl,
 		Bank:      bank,
 		SubLedger: sub,
+		Customers: customers,
+		Vendors:   vendors,
 		Manifest:  manifest,
 	}, nil
 }

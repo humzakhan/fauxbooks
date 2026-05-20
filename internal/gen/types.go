@@ -192,6 +192,62 @@ type SubLedgerSet struct {
 	ExpenseReports []SubLedgerRow
 }
 
+// Customer is a customer master record.
+// All fields are deterministic: names and contact details come from the seeded RNG.
+type Customer struct {
+	// ID is the stable customer identifier within a run (e.g. "cust-001").
+	ID string
+
+	// Name is the fake company name for this customer.
+	Name string
+
+	// Email is the fake contact email for this customer.
+	Email string
+
+	// Phone is the fake contact phone number.
+	Phone string
+
+	// Address is the fake street address.
+	Address string
+
+	// City is the fake city.
+	City string
+
+	// State is the fake US state abbreviation.
+	State string
+
+	// Zip is the fake US ZIP code.
+	Zip string
+}
+
+// Vendor is a vendor master record.
+// All fields are deterministic: names and contact details come from the seeded RNG.
+type Vendor struct {
+	// ID is the stable vendor identifier within a run (e.g. "vend-001").
+	ID string
+
+	// Name is the fake company name for this vendor.
+	Name string
+
+	// Email is the fake contact email for this vendor.
+	Email string
+
+	// Phone is the fake contact phone number.
+	Phone string
+
+	// Address is the fake street address.
+	Address string
+
+	// City is the fake city.
+	City string
+
+	// State is the fake US state abbreviation.
+	State string
+
+	// Zip is the fake US ZIP code.
+	Zip string
+}
+
 // Dataset is the full in-memory dataset produced by a generation run.
 // All slices are populated before any write or invariant check occurs.
 type Dataset struct {
@@ -213,7 +269,13 @@ type Dataset struct {
 	// SubLedger is the sub-ledger projection set.
 	SubLedger SubLedgerSet
 
-	// Manifest records run identity, row counts, and file hashes (hashes populated in PR-07).
+	// Customers is the customer master list for this run.
+	Customers []Customer
+
+	// Vendors is the vendor master list for this run.
+	Vendors []Vendor
+
+	// Manifest records run identity, row counts, and file hashes (hashes populated by writer.Write).
 	Manifest Manifest
 }
 

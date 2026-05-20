@@ -210,3 +210,59 @@ func WriteBillPaymentsJSONL(w io.Writer, rows []gen.SubLedgerRow) (n int, err er
 func WriteExpenseReportsJSONL(w io.Writer, rows []gen.SubLedgerRow) (n int, err error) {
 	return writeSubLedgerJSONL(w, rows, "WriteExpenseReportsJSONL")
 }
+
+// partyJSONLRow is the JSONL representation of a customer or vendor master record.
+type partyJSONLRow struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Phone   string `json:"phone"`
+	Address string `json:"address"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Zip     string `json:"zip"`
+}
+
+// WriteCustomersJSONL writes the customer master to w as JSONL, one object per line.
+func WriteCustomersJSONL(w io.Writer, customers []gen.Customer) (n int, err error) {
+	enc := newJSONLEncoder(w)
+	for _, c := range customers {
+		row := partyJSONLRow{
+			ID:      c.ID,
+			Name:    c.Name,
+			Email:   c.Email,
+			Phone:   c.Phone,
+			Address: c.Address,
+			City:    c.City,
+			State:   c.State,
+			Zip:     c.Zip,
+		}
+		if err = enc.Encode(row); err != nil {
+			return n, fmt.Errorf("WriteCustomersJSONL: %w", err)
+		}
+		n++
+	}
+	return n, nil
+}
+
+// WriteVendorsJSONL writes the vendor master to w as JSONL, one object per line.
+func WriteVendorsJSONL(w io.Writer, vendors []gen.Vendor) (n int, err error) {
+	enc := newJSONLEncoder(w)
+	for _, v := range vendors {
+		row := partyJSONLRow{
+			ID:      v.ID,
+			Name:    v.Name,
+			Email:   v.Email,
+			Phone:   v.Phone,
+			Address: v.Address,
+			City:    v.City,
+			State:   v.State,
+			Zip:     v.Zip,
+		}
+		if err = enc.Encode(row); err != nil {
+			return n, fmt.Errorf("WriteVendorsJSONL: %w", err)
+		}
+		n++
+	}
+	return n, nil
+}
