@@ -1,0 +1,13 @@
+section,account_code,account_name,amount
+asset,1010,Checking Account,-188234.574775000
+asset,1100,Accounts Receivable,-23156.520000000
+asset,1200,Inventory,62790.300000000
+asset,1510,Accumulated Depreciation,-27668.700000000
+total_assets,,,-176269.494775000
+liability,2000,Accounts Payable,-73905.100000000
+liability,2100,Accrued Liabilities,4004.954775000
+liability,2110,Accrued Salaries and Wages,48347.395225000
+total_liabilities,,,-21552.750000000
+net_income,,,-154716.744775000
+total_equity,,,-154716.744775000
+total_liabilities_and_equity,,,-176269.494775000

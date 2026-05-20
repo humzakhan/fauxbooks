@@ -1,0 +1,8 @@
+section,account_code,account_name,amount
+opening_cash,,,0.000000000
+inflow,1010,Checking Account,112798.870000000
+total_inflows,,,112798.870000000
+outflow,1010,Checking Account,301033.444775000
+total_outflows,,,301033.444775000
+net_change,,,-188234.574775000
+ending_cash,,,-188234.574775000

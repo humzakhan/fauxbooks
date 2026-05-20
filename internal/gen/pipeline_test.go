@@ -14,6 +14,7 @@ import (
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
 	"github.com/humzakhan/fauxbooks/internal/invariant"
+	"github.com/humzakhan/fauxbooks/internal/report"
 	"github.com/humzakhan/fauxbooks/internal/writer"
 )
 
@@ -62,7 +63,8 @@ func runPipeline(t *testing.T, cfg gen.Config, outDir string) {
 		}
 	}
 
-	if err := writer.Write(ds, cfg, outDir); err != nil {
+	reports := report.Compute(ds)
+	if err := writer.Write(ds, reports, cfg, outDir); err != nil {
 		t.Fatalf("writer.Write: %v", err)
 	}
 }

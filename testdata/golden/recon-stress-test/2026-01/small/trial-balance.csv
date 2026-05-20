@@ -1,0 +1,16 @@
+account_code,account_name,account_type,debit,credit
+1010,Checking Account,asset,0.000000000,188234.574775000
+1100,Accounts Receivable,asset,0.000000000,23156.520000000
+1200,Inventory,asset,62790.300000000,0.000000000
+1510,Accumulated Depreciation,asset,0.000000000,27668.700000000
+2000,Accounts Payable,liability,73905.100000000,0.000000000
+2100,Accrued Liabilities,liability,0.000000000,4004.954775000
+2110,Accrued Salaries and Wages,liability,0.000000000,48347.395225000
+4000,Sales Revenue,revenue,0.000000000,63680.410000000
+4200,Interest Income,revenue,0.000000000,25961.940000000
+5000,Cost of Goods Sold,expense,34830.390000000,0.000000000
+5100,Salaries and Wages Expense,expense,52352.350000000,0.000000000
+5110,Payroll Tax Expense,expense,4004.954775000,0.000000000
+5300,Travel and Entertainment Expense,expense,30112.710000000,0.000000000
+5400,Depreciation Expense,expense,27668.700000000,0.000000000
+5900,Other Operating Expenses,expense,95389.990000000,0.000000000

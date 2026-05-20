@@ -10,21 +10,22 @@ import (
 	"time"
 
 	"github.com/humzakhan/fauxbooks/internal/gen"
+	"github.com/humzakhan/fauxbooks/internal/report"
 )
 
 // TestManifestHashStability verifies that writing the same Dataset twice
 // produces byte-identical files and thus identical SHA-256 hashes.
 // This is the prime determinism assertion for the writer package.
 func TestManifestHashStability(t *testing.T) {
-	ds, cfg := buildTestDataset(t)
+	ds, reports, cfg := buildTestDataset(t)
 
 	dir1 := t.TempDir()
 	dir2 := t.TempDir()
 
-	if err := Write(ds, cfg, dir1); err != nil {
+	if err := Write(ds, reports, cfg, dir1); err != nil {
 		t.Fatalf("Write dir1: %v", err)
 	}
-	if err := Write(ds, cfg, dir2); err != nil {
+	if err := Write(ds, reports, cfg, dir2); err != nil {
 		t.Fatalf("Write dir2: %v", err)
 	}
 
@@ -63,10 +64,10 @@ func TestManifestHashStability(t *testing.T) {
 
 // TestManifestSchema verifies the manifest.json has the expected top-level fields.
 func TestManifestSchema(t *testing.T) {
-	ds, cfg := buildTestDataset(t)
+	ds, reports, cfg := buildTestDataset(t)
 	dir := t.TempDir()
 
-	if err := Write(ds, cfg, dir); err != nil {
+	if err := Write(ds, reports, cfg, dir); err != nil {
 		t.Fatalf("Write: %v", err)
 	}
 
@@ -108,10 +109,10 @@ func TestManifestSchema(t *testing.T) {
 // TestManifestFileSHA256SortedByName verifies that file_sha256 entries in
 // manifest.json are sorted by file name for deterministic output.
 func TestManifestFileSHA256SortedByName(t *testing.T) {
-	ds, cfg := buildTestDataset(t)
+	ds, reports, cfg := buildTestDataset(t)
 	dir := t.TempDir()
 
-	if err := Write(ds, cfg, dir); err != nil {
+	if err := Write(ds, reports, cfg, dir); err != nil {
 		t.Fatalf("Write: %v", err)
 	}
 
@@ -150,7 +151,7 @@ func readManifestJSON(t *testing.T, outDir string) manifestJSONParsed {
 
 // buildTestDataset constructs a Dataset and Config for writer tests using
 // gen.Run with seed=1, period=2026-01, volume=small.
-func buildTestDataset(t *testing.T) (gen.Dataset, gen.Config) {
+func buildTestDataset(t *testing.T) (gen.Dataset, report.Reports, gen.Config) {
 	t.Helper()
 	period, err := time.Parse("2006-01", "2026-01")
 	if err != nil {
@@ -167,5 +168,5 @@ func buildTestDataset(t *testing.T) (gen.Dataset, gen.Config) {
 	if err != nil {
 		t.Fatalf("gen.Run: %v", err)
 	}
-	return ds, cfg
+	return ds, report.Compute(ds), cfg
 }

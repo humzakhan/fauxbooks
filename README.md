@@ -52,6 +52,10 @@ fbx gen <bundle> --seed N --period YYYY-MM [--volume small|medium|large] [--out 
 
 `fbx gen` is the only subcommand in v0.1.
 
+## v0.2
+
+PR-V01 adds four derived financial report files per run (Profit & Loss, Balance Sheet, Cash Flow, Trial Balance), each written in both CSV and JSONL formats. These are computed from the event-sourced dataset by the new `internal/report` package and written by streaming writers in `internal/writer`.
+
 ## Bundles
 
 ### `monthly-close`
@@ -128,6 +132,10 @@ All files are written under `--out`. CSV files are RFC 4180, UTF-8, `\n` line en
 | `bill_payments.csv` | AP disbursements. |
 | `expense_reports.csv` | Expense reports with line items. |
 | `manifest.json` | Run metadata and file hashes (see below). |
+| `profit-loss.csv` / `.jsonl` | Profit & Loss statement derived from GL revenue and expense accounts. |
+| `balance-sheet.csv` / `.jsonl` | Balance Sheet (assets, liabilities, equity) as of period end. |
+| `cash-flow.csv` / `.jsonl` | Cash Flow statement (operating, investing, financing). |
+| `trial-balance.csv` / `.jsonl` | Trial Balance — debit and credit totals per account. |
 
 **Stress-test only:**
 
