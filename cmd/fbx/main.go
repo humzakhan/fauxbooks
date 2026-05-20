@@ -47,6 +47,8 @@ func run(args []string) int {
 		return runGen(args[1:])
 	case "verify":
 		return runVerify(args[1:])
+	case "convert":
+		return runConvert(args[1:])
 	case "version":
 		fmt.Println(Version)
 		return 0
