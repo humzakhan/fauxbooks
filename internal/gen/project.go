@@ -18,7 +18,12 @@ func compositeKey(occurredAt string, entryID string, lineIndex int) string {
 // formatDecimalRaw returns a decimal as plain text with 9 fractional digits.
 // This is the canonical projection-layer format; the writer package enforces
 // the same rule for output serialization.
+// Neg-zero guard: any value for which d.IsZero() returns "0.000000000",
+// never "-0.000000000", mirroring internal/writer.FormatDecimal.
 func formatDecimalRaw(d decimal.Decimal) string {
+	if d.IsZero() {
+		return "0.000000000"
+	}
 	return d.StringFixed(9)
 }
 
@@ -109,7 +114,7 @@ func Project(entries []JournalEntry, lines []JournalLine, coa map[string]Account
 		}
 
 		// Bank row: only for cash account codes.
-		if CashAccountCodes[pl.line.AccountCode] {
+		if IsCashAccount(pl.line.AccountCode) {
 			bankRowNum++
 			bank = append(bank, BankRow{
 				RowNum:      bankRowNum,

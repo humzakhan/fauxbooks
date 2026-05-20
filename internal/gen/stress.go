@@ -183,8 +183,8 @@ func shiftDate(rfc3339 string, days int) (string, error) {
 // sortedCashCodes returns the cash account codes in sorted order for
 // deterministic selection in orphan row injection.
 func sortedCashCodes() []string {
-	codes := make([]string, 0, len(CashAccountCodes))
-	for code := range CashAccountCodes {
+	codes := make([]string, 0, len(cashAccountCodes))
+	for code := range cashAccountCodes {
 		codes = append(codes, code)
 	}
 	sort.Strings(codes)

@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // smallInput builds a deterministic set of entries and lines for projection
@@ -76,7 +78,7 @@ func TestProject_BankRowCount(t *testing.T) {
 
 	wantBankRows := 0
 	for _, ln := range lines {
-		if CashAccountCodes[ln.AccountCode] {
+		if IsCashAccount(ln.AccountCode) {
 			wantBankRows++
 		}
 	}
@@ -190,6 +192,19 @@ func TestRun_Smoke(t *testing.T) {
 		len(ds.SubLedger.ExpenseReports)
 	if totalSubLedger == 0 {
 		t.Error("Dataset.SubLedger is entirely empty; want non-empty")
+	}
+}
+
+// TestFormatDecimalRaw_NegZero verifies that formatDecimalRaw never returns
+// "-0.000000000" for a value that subtracts to negative-zero. This mirrors the
+// neg-zero guard in internal/writer.FormatDecimal.
+func TestFormatDecimalRaw_NegZero(t *testing.T) {
+	// Construct a negative-zero decimal: subtract a value from itself.
+	a := decimal.RequireFromString("1.23")
+	negZero := a.Sub(a).Neg() // results in -0 in shopspring representation
+	got := formatDecimalRaw(negZero)
+	if got != "0.000000000" {
+		t.Errorf("formatDecimalRaw(negZero) = %q; want %q", got, "0.000000000")
 	}
 }
 

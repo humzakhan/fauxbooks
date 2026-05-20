@@ -4,6 +4,7 @@
   "bundle": "recon-stress-test",
   "volume": "small",
   "format": "csv",
+  "version": "",
   "row_counts": [
     {
       "name": "bank_statement.csv",

@@ -66,6 +66,27 @@ func TestParseConfig_ErrUnknownBundle(t *testing.T) {
 	}
 }
 
+func TestParseConfig_ErrUnknownFormat(t *testing.T) {
+	cases := []struct {
+		name   string
+		format string
+	}{
+		{"empty", ""},
+		{"typo", "csvo"},
+		{"uppercase", "CSV"},
+		{"xml", "xml"},
+		{"xlsx", "xlsx"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ParseConfig(1, "2026-01", "small", "monthly-close", "/tmp", tc.format)
+			if !errors.Is(err, ErrUnknownFormat) {
+				t.Errorf("format=%q: got %v, want ErrUnknownFormat", tc.format, err)
+			}
+		})
+	}
+}
+
 func TestParseConfig_Valid(t *testing.T) {
 	cfg, err := ParseConfig(42, "2026-01", "small", "monthly-close", "/tmp/out", "csv")
 	if err != nil {
@@ -85,5 +106,8 @@ func TestParseConfig_Valid(t *testing.T) {
 	}
 	if cfg.Bundle != "monthly-close" {
 		t.Errorf("Bundle: got %q, want %q", cfg.Bundle, "monthly-close")
+	}
+	if cfg.Format != "csv" {
+		t.Errorf("Format: got %q, want %q", cfg.Format, "csv")
 	}
 }
