@@ -1,0 +1,39 @@
+{
+  "records": [
+    {
+      "type": "duplicate",
+      "entry_id": "JE-00000017",
+      "detail": "bank row duplicated (source RowNum 11)"
+    },
+    {
+      "type": "duplicate",
+      "entry_id": "JE-00000098",
+      "detail": "bank row duplicated (source RowNum 66)"
+    },
+    {
+      "type": "duplicate",
+      "entry_id": "JE-00000110",
+      "detail": "bank row duplicated (source RowNum 74)"
+    },
+    {
+      "type": "orphan_bank_row",
+      "entry_id": "orphan-001",
+      "detail": "orphan bank row with no GL match: account 1020 amount 888.000000000 on 2026-01-28T09:51:15.49668874Z"
+    },
+    {
+      "type": "orphan_bank_row",
+      "entry_id": "orphan-002",
+      "detail": "orphan bank row with no GL match: account 1010 amount 240.000000000 on 2026-01-14T09:51:15.49668874Z"
+    },
+    {
+      "type": "timing_difference",
+      "entry_id": "JE-00000114",
+      "detail": "bank row date shifted +3 day(s): 2026-01-24T09:41:43.31125818Z -> 2026-01-27T09:41:43.31125818Z"
+    },
+    {
+      "type": "timing_difference",
+      "entry_id": "JE-00000131",
+      "detail": "bank row date shifted +1 day(s): 2026-01-27T21:27:25.03311247Z -> 2026-01-28T21:27:25.03311247Z"
+    }
+  ]
+}
