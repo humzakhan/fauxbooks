@@ -22,8 +22,8 @@ var ErrUnknownVolume = errors.New("gen: unknown volume tier; want small|medium|l
 var ErrUnknownBundle = errors.New("gen: unknown bundle name")
 
 // ErrUnknownFormat is returned by ParseConfig when the --format flag is not
-// one of the recognised output formats (csv, jsonl).
-var ErrUnknownFormat = errors.New("gen: unknown format; want csv|jsonl")
+// one of the recognised output formats (csv, jsonl, xlsx).
+var ErrUnknownFormat = errors.New("gen: unknown format; want csv|jsonl|xlsx")
 
 // validVolumes is the exhaustive set of recognised volume tiers for v0.1.
 var validVolumes = map[string]bool{
@@ -38,10 +38,11 @@ var validBundles = map[string]bool{
 	"recon-stress-test": true,
 }
 
-// validFormats is the exhaustive set of recognised output formats for v0.1.
+// validFormats is the exhaustive set of recognised output formats for v0.2.
 var validFormats = map[string]bool{
 	"csv":   true,
 	"jsonl": true,
+	"xlsx":  true,
 }
 
 // Config holds all parameters needed to reproduce a deterministic generation

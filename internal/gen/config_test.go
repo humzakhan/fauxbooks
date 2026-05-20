@@ -75,7 +75,6 @@ func TestParseConfig_ErrUnknownFormat(t *testing.T) {
 		{"typo", "csvo"},
 		{"uppercase", "CSV"},
 		{"xml", "xml"},
-		{"xlsx", "xlsx"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -84,6 +83,15 @@ func TestParseConfig_ErrUnknownFormat(t *testing.T) {
 				t.Errorf("format=%q: got %v, want ErrUnknownFormat", tc.format, err)
 			}
 		})
+	}
+}
+
+func TestParseConfig_ValidFormats(t *testing.T) {
+	for _, format := range []string{"csv", "jsonl", "xlsx"} {
+		_, err := ParseConfig(1, "2026-01", "small", "monthly-close", "/tmp", format)
+		if err != nil {
+			t.Errorf("format=%q: unexpected error: %v", format, err)
+		}
 	}
 }
 

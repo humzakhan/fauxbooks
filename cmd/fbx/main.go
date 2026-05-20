@@ -2,7 +2,7 @@
 //
 // Usage:
 //
-//	fbx gen <bundle> --seed N --period YYYY-MM --volume small|medium|large [--out DIR] [--format csv|jsonl]
+//	fbx gen <bundle> --seed N --period YYYY-MM --volume small|medium|large [--out DIR] [--format csv|jsonl|xlsx]
 //
 // Exit codes:
 //
@@ -70,7 +70,7 @@ func runGen(args []string) int {
 		period = fs.String("period", "", "target month in YYYY-MM format (required)")
 		volume = fs.String("volume", "small", "size tier: small|medium|large")
 		out    = fs.String("out", ".", "output directory")
-		format = fs.String("format", "csv", "output format: csv|jsonl")
+		format = fs.String("format", "csv", "output format: csv|jsonl|xlsx")
 	)
 
 	if err := fs.Parse(rest); err != nil {
@@ -128,8 +128,15 @@ func runGen(args []string) int {
 	reports.CheckRegister = report.ComputeCheckRegister(ds)
 
 	// Step 4: write all output files.
-	if err := writer.Write(ds, reports, cfg, cfg.OutDir); err != nil {
-		fmt.Fprintf(os.Stderr, "fbx: write failed: %v\n", err)
+	// xlsx is a complete substitute for the CSV file set; dispatch separately.
+	var writeErr error
+	if cfg.Format == "xlsx" {
+		writeErr = writer.WriteXLSX(ds, reports, cfg, cfg.OutDir)
+	} else {
+		writeErr = writer.Write(ds, reports, cfg, cfg.OutDir)
+	}
+	if writeErr != nil {
+		fmt.Fprintf(os.Stderr, "fbx: write failed: %v\n", writeErr)
 		return 2
 	}
 
