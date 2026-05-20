@@ -51,7 +51,7 @@ func WriteTruth(outDir string, ds gen.Dataset) (rowCount int, hexHash string, er
 		return 0, "", fmt.Errorf("write truth.json: %w", werr)
 	}
 
-	// Flush must happen before sum() to ensure all buffered bytes are hashed.
+	// Flush drains the bufio buffer to the underlying file; hashing occurred at write time via io.MultiWriter.
 	if ferr := bw.Flush(); ferr != nil {
 		return 0, "", fmt.Errorf("flush truth.json for hash: %w", ferr)
 	}
