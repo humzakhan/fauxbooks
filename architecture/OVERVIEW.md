@@ -15,14 +15,16 @@ The generator is event-sourced. Each business event (sale, bill payment, expense
 events → journal entries → {GL, bank statement, sub-ledgers}
 ```
 
-## Invariants (enforced at write time, abort on failure)
+## Invariants
+
+Four invariants are checked at runtime before any output is written; if any fails the run exits 2 and writes nothing:
 
 1. Every journal entry: Σ debits = Σ credits exactly.
 2. Every account code referenced exists in the chart of accounts.
 3. Bank statement totals tie to GL cash account postings.
 4. Every sub-ledger row references an existing journal entry.
 
-If any fails, the run exits non-zero and writes nothing.
+A fifth invariant — byte-identical output across runs, OSes, and architectures — is enforced by the golden-fixture CI test rather than at runtime.
 
 ## CLI
 
@@ -36,7 +38,15 @@ Two bundles in v0.1:
 - **`monthly-close`** — coa, journal entries, GL, bank statement, customers, invoices, customer payments, vendors, bills, bill payments, expense reports.
 - **`recon-stress-test`** — the same, but with timing differences, duplicates, and orphan bank transactions injected; a `truth.json` records what was injected.
 
-Sizing via `--volume small|medium|large` (≈1k / 10k / 100k GL rows). Hard cap 10⁷; beyond that, run multiple periods.
+Sizing via `--volume small|medium|large`:
+
+| Tier | Events | GL rows (approx) |
+|---|---|---|
+| `small` | 150 | ≈333 |
+| `medium` | 1 500 | ≈3 300 |
+| `large` | 15 000 | ≈33 000 |
+
+Hard cap 10⁷ GL rows; beyond that, run multiple periods.
 
 ## Documents in v0.1
 
@@ -53,7 +63,7 @@ Sizing via `--volume small|medium|large` (≈1k / 10k / 100k GL rows). Hard cap 
 | `bills.csv` | Vendor bill line items |
 | `bill_payments.csv` | AP disbursements |
 | `expense_reports.csv` | Expense reports with line items |
-| `manifest.json` | Seed, flags, version, row counts, output hashes |
+| `manifest.json` | Seed, bundle, period, volume, format, version, row counts, SHA-256 hashes per file |
 | `truth.json` | (stress-test only) Ground truth of injected mismatches |
 
 Every monetary column is decimal text with 9 fractional digits (e.g. `100.000000000`) — never float, no thousands separators, no scientific notation.
@@ -74,15 +84,11 @@ Same `--seed` + bundle + period + version → byte-identical output across runs,
 - No wall-clock reads in the generation path; all timestamps derive from `--period`.
 - Golden-fixture test in CI exercises every bundle at small volume.
 
-## Progress
-
-Bar to stderr when stderr is a TTY; silent otherwise. No flag needed.
-
 ## Exit codes
 
 - `0` — success
 - `1` — configuration or input error
-- `2` — invariant violation or runtime error (nothing written)
+- `2` — invariant violation or I/O failure (nothing written)
 
 ## Agent integration
 
