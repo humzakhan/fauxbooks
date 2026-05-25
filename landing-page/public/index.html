@@ -37,9 +37,21 @@
 
     <section class="band band--paper features-band">
       <div class="wrap features">
-        <div class="feature"><h3>deterministic</h3><p>same seed → same bytes, every OS</p></div>
-        <div class="feature"><h3>reconcilable</h3><p>Σ debits = Σ credits, every run</p></div>
-        <div class="feature"><h3>single binary</h3><p>no CGo, no deps · csv · jsonl · xlsx</p></div>
+        <div class="feature">
+          <h3>deterministic</h3>
+          <p>same seed → same bytes, every OS</p>
+          <code class="feature__proof">sha256: run 1 == run 2 <span class="ok">✓</span></code>
+        </div>
+        <div class="feature">
+          <h3>reconcilable</h3>
+          <p>Σ debits = Σ credits, every run</p>
+          <code class="feature__proof"><span class="dr">5,910.10</span> = <span class="cr">5,910.10</span> <span class="ok">✓</span></code>
+        </div>
+        <div class="feature">
+          <h3>single binary</h3>
+          <p>no CGo, no deps · csv · jsonl · xlsx</p>
+          <code class="feature__proof">$ ldd fbx → not a dynamic executable</code>
+        </div>
       </div>
     </section>
 
@@ -103,11 +115,13 @@
 
     <section class="band band--paper cta-band">
       <div class="wrap cta">
-        <h2 class="cta-title">Reconcilable books in one command.</h2>
-        <p class="cta-install"><span class="cta-prompt">$</span> <span id="install-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span> <button class="copy-btn" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button></p>
-        <div class="cta-actions">
-          <a class="btn btn--solid" href="https://github.com/humzakhan/fauxbooks">Get started →</a>
-          <a class="btn btn--ghost" href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">Read the docs ↗</a>
+        <div class="cta-card">
+          <h2 class="cta-title">Reconcilable books in one command.</h2>
+          <p class="cta-install"><span class="cta-prompt">$</span> <span id="install-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span> <button class="copy-btn" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button></p>
+          <div class="cta-actions">
+            <a class="btn btn--solid" href="https://github.com/humzakhan/fauxbooks">Get started →</a>
+            <a class="btn btn--ghost" href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">Read the docs ↗</a>
+          </div>
         </div>
       </div>
     </section>

@@ -449,15 +449,23 @@ body {
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem 2.5rem;
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .feature {
-  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 18px 18px 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .feature:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(26, 26, 24, 0.05);
 }
 
 .features-band .feature h3 {
@@ -493,6 +501,26 @@ body {
   font-size: 0.85rem;
   color: rgba(26, 26, 24, 0.72);
   line-height: 1.5;
+  margin-bottom: 0.9rem;
+}
+
+/* Proof line — a small monospace "it's true" at the bottom of each card */
+.feature__proof {
+  display: block;
+  margin-top: auto;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--hairline);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.feature__proof .ok {
+  color: var(--pine);
+  font-weight: 500;
 }
 
 @media (max-width: 620px) {
@@ -728,6 +756,15 @@ body {
    --------------------------------------------------------- */
 .cta {
   /* stacks naturally */
+}
+
+/* Framed CTA card with a pine left-accent */
+.cta-card {
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--pine);
+  border-radius: 8px;
+  background: rgba(30, 111, 68, 0.04);
+  padding: clamp(24px, 4vw, 40px);
 }
 
 .cta-title {
