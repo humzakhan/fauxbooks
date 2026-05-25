@@ -528,138 +528,198 @@ body {
   margin-bottom: 0.25rem;
 }
 
-/* Individual example block */
-.example {
-  margin: 2rem 0;
-}
-
-.example__label {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin-bottom: 0.6rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-}
-
-.filename {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-/* Data table — monospace pre block */
-.data-table {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid var(--hairline);
-  border-radius: 4px;
-  padding: 14px 18px;
-  overflow-x: auto;
-  white-space: pre;
-  tab-size: 4;
-}
-
-.data-table code {
-  font-family: inherit;
-  font-size: inherit;
-  background: none;
-  border: none;
-  padding: 0;
-}
-
-/* GL column colouring — debit / credit (unchanged) */
+/* GL column colouring — debit / credit (reused by explorer cells) */
 .dr { color: var(--pine); }
 .cr { color: var(--accent); }
 
-/* Balance badge — JS animates .bal-num from 0.00 to final value */
-.balance-badge {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin: 0.5rem 0 0.25rem;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.3em;
-}
-
-.bal-num {
-  color: var(--pine);
-  font-weight: 500;
-}
-
-.bal-check {
-  color: var(--pine);
-  opacity: 0;
-  transition: opacity 300ms ease;
-}
-
-.balance-badge.is-balanced .bal-check {
-  opacity: 1;
-}
-
-/* [3] LEGIBILITY — caption: was --muted (#6B6862), now rgba(26,26,24,0.72) */
+/* Caption under the explorer */
 .caption {
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
   color: rgba(26, 26, 24, 0.72);
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   line-height: 1.5;
+  max-width: 60ch;
 }
+
+.muted { color: var(--muted); }
 
 /* ---------------------------------------------------------
-   Filelist — definition list
+   File explorer — interactive ./books/ browser
    --------------------------------------------------------- */
-.filelist {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  row-gap: 0.6rem;
-  column-gap: 1.5rem;
-  list-style: none;
-  margin-top: 0.75rem;
+.explorer {
+  margin-top: 1.5rem;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(26, 26, 24, 0.06), 0 4px 16px rgba(26, 26, 24, 0.04);
 }
 
-.filelist dt {
+/* Window chrome bar — cohesive with the hero terminal */
+.explorer__chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(246, 244, 239, 0.80);
+}
+
+.explorer__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hairline);
+}
+
+.explorer__path {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  color: var(--ink);
+  margin-left: 6px;
+}
+
+.explorer__count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.explorer__main {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) 1fr;
+}
+
+/* Left pane — file tree */
+.explorer__tree {
+  border-right: 1px solid var(--hairline);
+  padding: 12px 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: rgba(250, 248, 243, 0.5);
+}
+
+.tree__group { margin-bottom: 0.9rem; }
+.tree__group:last-child { margin-bottom: 0; }
+
+.tree__label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 0 8px;
+  margin-bottom: 0.3rem;
+}
+
+.tree__file {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tree__file:hover {
+  background: rgba(26, 26, 24, 0.04);
+  color: var(--ink);
+}
+
+.tree__file[aria-current="true"] {
+  background: rgba(30, 111, 68, 0.10);
+  color: var(--ink);
+  border-left-color: var(--pine);
+  font-weight: 500;
+}
+
+/* Right pane — preview */
+.explorer__preview {
+  padding: 14px 18px 18px;
+  min-height: 230px;
+  overflow-x: auto;
+}
+
+.preview__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.preview__name {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
   font-weight: 500;
   color: var(--ink);
-  align-self: baseline;
-  padding-top: 0.05em;
 }
 
-.filelist dd {
+.preview__balanced {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
-  color: var(--muted);
-  align-self: baseline;
+  font-size: 0.74rem;
+  color: var(--pine);
+  white-space: nowrap;
+}
+
+.preview__balanced[hidden] { display: none; }
+
+.preview__table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.76rem;
   line-height: 1.5;
 }
 
-.filelist .muted {
+.preview__table th {
+  text-align: left;
+  font-weight: 500;
   color: var(--muted);
-  opacity: 0.7;
+  border-bottom: 1px solid var(--hairline);
+  padding: 4px 14px 6px 0;
+  white-space: nowrap;
 }
 
-@media (max-width: 480px) {
-  .filelist {
-    grid-template-columns: 1fr;
-    row-gap: 0.25rem;
-  }
+.preview__table td {
+  color: var(--ink);
+  border-bottom: 1px solid rgba(230, 226, 216, 0.5);
+  padding: 5px 14px 5px 0;
+  white-space: nowrap;
+}
 
-  .filelist dt {
-    margin-top: 0.75rem;
-    color: var(--ink);
-  }
+.preview__table th:last-child,
+.preview__table td:last-child { padding-right: 0; }
 
-  .filelist dt:first-child {
-    margin-top: 0;
+.preview__table .num { text-align: right; }
+.preview__table .cell--dr { color: var(--pine); }
+.preview__table .cell--cr { color: var(--accent); }
+
+.preview__note {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(26, 26, 24, 0.66);
+  margin-top: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .explorer__main { grid-template-columns: 1fr; }
+
+  .explorer__tree {
+    border-right: 0;
+    border-bottom: 1px solid var(--hairline);
+    max-height: 200px;
   }
 }
 

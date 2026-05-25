@@ -50,26 +50,52 @@
         <h2 class="section-title">Examples</h2>
         <p class="lede">One run writes a complete double-entry close — 19 CSVs and a manifest.</p>
 
-        <div class="example">
-          <div class="example__label">What it looks like <span class="filename">gl.csv</span></div>
-          <pre class="data-table"><code>entry_id      account   debit             credit
-JE-00000001   5000      <span class="dr">5910.100000000</span>    <span class="cr">0.000000000</span>
-JE-00000001   1300      <span class="dr">0.000000000</span>       <span class="cr">5910.100000000</span></code></pre>
-          <p class="balance-badge"><span class="bal-num" data-target="5910.10">0.00</span><span class="bal-check"> ✓ balanced</span></p>
-          <p class="caption">Decimals as exact strings, 9 fractional digits. No floats, ever. Every entry: Σ debits = Σ credits.</p>
+        <div class="explorer" id="file-explorer">
+          <div class="explorer__chrome" aria-hidden="true">
+            <span class="explorer__dot"></span><span class="explorer__dot"></span><span class="explorer__dot"></span>
+            <span class="explorer__path">./books/</span>
+            <span class="explorer__count">19 files + manifest.json</span>
+          </div>
+          <div class="explorer__main">
+            <nav class="explorer__tree" aria-label="Generated files — click to preview">
+              <div class="tree__group">
+                <p class="tree__label">ledger</p>
+                <button class="tree__file" type="button" data-file="gl.csv" aria-current="true">gl.csv</button>
+                <button class="tree__file" type="button" data-file="journal_entries.csv">journal_entries.csv</button>
+                <button class="tree__file" type="button" data-file="coa.csv">coa.csv</button>
+                <button class="tree__file" type="button" data-file="bank_statement.csv">bank_statement.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">masters</p>
+                <button class="tree__file" type="button" data-file="customers.csv">customers.csv</button>
+                <button class="tree__file" type="button" data-file="vendors.csv">vendors.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">sub-ledgers</p>
+                <button class="tree__file" type="button" data-file="invoices.csv">invoices.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">statements</p>
+                <button class="tree__file" type="button" data-file="trial-balance.csv">trial-balance.csv</button>
+                <button class="tree__file" type="button" data-file="balance-sheet.csv">balance-sheet.csv</button>
+                <button class="tree__file" type="button" data-file="profit-loss.csv">profit-loss.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">reports</p>
+                <button class="tree__file" type="button" data-file="ar-aging.csv">ar-aging.csv</button>
+              </div>
+            </nav>
+            <div class="explorer__preview">
+              <div class="preview__head">
+                <span class="preview__name" id="exp-name">gl.csv</span>
+                <span class="preview__balanced" id="exp-balanced">Σ debits = Σ credits ✓</span>
+              </div>
+              <div class="preview__table" id="exp-table"></div>
+              <p class="preview__note" id="exp-note"></p>
+            </div>
+          </div>
         </div>
-
-        <div class="example">
-          <div class="example__label">What's in the folder <span class="filename">./books/</span></div>
-          <dl class="filelist">
-            <dt>ledger</dt><dd>coa · journal_entries · gl · bank_statement</dd>
-            <dt>masters</dt><dd>customers · vendors</dd>
-            <dt>sub-ledgers</dt><dd>invoices · customer_payments · bills · bill_payments · expense_reports</dd>
-            <dt>statements</dt><dd>profit-loss · balance-sheet · cash-flow · trial-balance</dd>
-            <dt>reports</dt><dd>ar-aging · ap-aging · customer-statements · check-register</dd>
-            <dt>metadata</dt><dd>manifest.json <span class="muted">(seeds, row counts, SHA-256 per file)</span></dd>
-          </dl>
-        </div>
+        <p class="caption">Real rows from a seeded run — click any file. Decimals are exact strings (9 fractional digits), never floats. One run writes 19 CSVs plus <span class="muted">manifest.json</span> (seeds, row counts, SHA-256 per file).</p>
       </div>
     </section>
 

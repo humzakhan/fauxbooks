@@ -26,6 +26,7 @@
     initCopyButtons();
     initBalanceCountUp();
     initHeroTerminal();
+    initFileExplorer();
   }
 
   // ── A) Copy-to-clipboard ─────────────────────────────────────────────────────
@@ -365,6 +366,199 @@
     } else {
       runSequence();
     }
+  }
+
+  // ── D) Interactive file explorer (Examples section) ──────────────────────────
+
+  /**
+   * Two-pane ./books/ browser. Clicking a file in the tree renders its real
+   * sample rows (from a seeded golden run) into the preview table.
+   *
+   * Column kinds: 'dr' → pine (debit), 'cr' → oxblood (credit), 'num' → right-
+   * aligned, default → left ink text. Files marked balanced show a "Σ debits =
+   * Σ credits ✓" badge. All values are real fixture data; tables are built with
+   * DOM APIs (textContent), never innerHTML on data.
+   */
+  function initFileExplorer() {
+    var root = document.getElementById('file-explorer');
+    if (!root) return;
+
+    var nameEl     = document.getElementById('exp-name');
+    var balancedEl = document.getElementById('exp-balanced');
+    var tableEl    = document.getElementById('exp-table');
+    var noteEl     = document.getElementById('exp-note');
+    if (!nameEl || !tableEl || !noteEl) return;
+
+    // Real rows from testdata/golden/monthly-close/2026-01/small.
+    var FILES = {
+      'gl.csv': {
+        balanced: true,
+        cols: [{ l: 'entry_id' }, { l: 'account' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
+        rows: [
+          ['JE-00000001', '5000', '5910.100000000', '0.000000000'],
+          ['JE-00000001', '1200', '0.000000000', '5910.100000000']
+        ],
+        note: 'Each journal entry’s lines — debits and credits net to zero by construction.'
+      },
+      'journal_entries.csv': {
+        cols: [{ l: 'entry_id' }, { l: 'description' }, { l: 'source_event_id' }],
+        rows: [
+          ['JE-00000001', 'Inventory COGS', 'evt-000001'],
+          ['JE-00000002', 'Customer payment', 'evt-000002']
+        ],
+        note: 'One header row per business event; gl.csv holds its balanced lines.'
+      },
+      'coa.csv': {
+        cols: [{ l: 'code' }, { l: 'name' }, { l: 'type' }, { l: 'normal_balance' }],
+        rows: [
+          ['1000', 'Cash and Cash Equivalents', 'asset', 'debit'],
+          ['1010', 'Checking Account', 'asset', 'debit']
+        ],
+        note: 'Chart of accounts — every account code in the books resolves here.'
+      },
+      'bank_statement.csv': {
+        balanced: true,
+        cols: [{ l: 'entry_id' }, { l: 'account' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
+        rows: [
+          ['JE-00000002', '1010', '3477.180000000', '0.000000000'],
+          ['JE-00000005', '1010', '0.000000000', '644.035140000']
+        ],
+        note: 'Cash postings tie back to GL entries — bank totals reconcile to GL cash.'
+      },
+      'customers.csv': {
+        cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
+        rows: [
+          ['cust-001', 'CostQuest', 'Los Angeles', 'MI'],
+          ['cust-002', 'Healthline', 'Miami', 'AA']
+        ],
+        note: 'Customer master — invoices and AR aging reference these ids.'
+      },
+      'vendors.csv': {
+        cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
+        rows: [
+          ['vend-001', 'Apextech LLC', 'Riverside', 'UT'],
+          ['vend-002', 'Construction Monitor LLC', 'Mesa', 'MN']
+        ],
+        note: 'Vendor master — bills and AP aging reference these ids.'
+      },
+      'invoices.csv': {
+        cols: [{ l: 'entry_id' }, { l: 'amount', k: 'num' }, { l: 'sub_ledger_type' }],
+        rows: [
+          ['JE-00000004', '480.460000000', 'invoice'],
+          ['JE-00000012', '7309.660000000', 'invoice']
+        ],
+        note: 'Sub-ledger rows each reference an existing journal entry.'
+      },
+      'trial-balance.csv': {
+        balanced: true,
+        cols: [{ l: 'account' }, { l: 'name' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
+        rows: [
+          ['1010', 'Checking Account', '0.000000000', '188234.574775000'],
+          ['1100', 'Accounts Receivable', '0.000000000', '23156.520000000']
+        ],
+        note: 'Debit and credit totals per account — the whole trial balance ties out.'
+      },
+      'balance-sheet.csv': {
+        cols: [{ l: 'section' }, { l: 'account' }, { l: 'name' }, { l: 'amount', k: 'num' }],
+        rows: [
+          ['asset', '1010', 'Checking Account', '-188234.574775000'],
+          ['asset', '1100', 'Accounts Receivable', '-23156.520000000']
+        ],
+        note: 'Assets, liabilities, and equity as of period end.'
+      },
+      'profit-loss.csv': {
+        cols: [{ l: 'section' }, { l: 'account' }, { l: 'name' }, { l: 'amount', k: 'num' }],
+        rows: [
+          ['revenue', '4000', 'Sales Revenue', '63680.410000000'],
+          ['revenue', '4200', 'Interest Income', '25961.940000000']
+        ],
+        note: 'P&L derived from GL revenue and expense accounts.'
+      },
+      'ar-aging.csv': {
+        cols: [{ l: 'party' }, { l: '0–30', k: 'num' }, { l: '31–60', k: 'num' }, { l: '61–90', k: 'num' }, { l: '91+', k: 'num' }],
+        rows: [
+          ['CostQuest', '2326.640000000', '0.000000000', '0.000000000', '0.000000000'],
+          ['Healthline', '3284.610000000', '0.000000000', '0.000000000', '0.000000000']
+        ],
+        note: 'Receivables bucketed by age, per customer.'
+      }
+    };
+
+    var buttons = root.querySelectorAll('.tree__file');
+
+    function thClass(kind) { return kind ? 'num' : ''; }
+    function tdClass(kind) {
+      if (kind === 'dr') return 'num cell--dr';
+      if (kind === 'cr') return 'num cell--cr';
+      if (kind === 'num') return 'num';
+      return '';
+    }
+
+    function render(file) {
+      var data = FILES[file];
+      if (!data) return;
+
+      nameEl.textContent = file;
+
+      if (balancedEl) {
+        if (data.balanced) { balancedEl.hidden = false; }
+        else { balancedEl.hidden = true; }
+      }
+
+      // Build table via DOM APIs (no innerHTML on data)
+      var table = document.createElement('table');
+
+      var thead = document.createElement('thead');
+      var htr = document.createElement('tr');
+      for (var c = 0; c < data.cols.length; c++) {
+        var th = document.createElement('th');
+        th.textContent = data.cols[c].l;
+        if (thClass(data.cols[c].k)) th.className = thClass(data.cols[c].k);
+        htr.appendChild(th);
+      }
+      thead.appendChild(htr);
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+      for (var r = 0; r < data.rows.length; r++) {
+        var tr = document.createElement('tr');
+        for (var ci = 0; ci < data.cols.length; ci++) {
+          var td = document.createElement('td');
+          td.textContent = data.rows[r][ci];
+          var cls = tdClass(data.cols[ci].k);
+          if (cls) td.className = cls;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+
+      tableEl.innerHTML = '';
+      tableEl.appendChild(table);
+
+      noteEl.textContent = data.note;
+
+      // Update selected state
+      for (var b = 0; b < buttons.length; b++) {
+        if (buttons[b].getAttribute('data-file') === file) {
+          buttons[b].setAttribute('aria-current', 'true');
+        } else {
+          buttons[b].removeAttribute('aria-current');
+        }
+      }
+    }
+
+    for (var i = 0; i < buttons.length; i++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          render(btn.getAttribute('data-file'));
+        });
+      })(buttons[i]);
+    }
+
+    // Initial render — the file marked aria-current in markup, else gl.csv
+    var initial = root.querySelector('.tree__file[aria-current="true"]');
+    render(initial ? initial.getAttribute('data-file') : 'gl.csv');
   }
 
 })();
