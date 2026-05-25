@@ -1,68 +1,68 @@
 /**
- * ascii-bg.js — "ruled ledger paper, ultra-slow drift"
+ * ascii-bg.js — "Double-Entry Balance Scale"
  *
- * Draws faint horizontal rule lines and sparse balanced-ledger figures onto
- * #ascii-bg. The entire sheet drifts downward at ~6 px/sec and loops
- * seamlessly. No cursor interaction of any kind.
+ * Draws a large, high-contrast balance scale (a double-entry accounting metaphor)
+ * centered in the viewport on #ascii-bg. The cursor disturbs the beam; a spring
+ * restores it to level. Pine green (= balanced) / oxblood (≠ disturbed).
  *
  * Canvas:  #ascii-bg — fixed, full viewport, pointer-events:none.
- * Colors:  ink  rgba(26,26,24, …)   rule lines and figures
- *          pine rgb(30,111,68)       '=' accent in figures
+ * Colors:  ink  rgba(26,26,24, …)   structural strokes and labels
+ *          pine #1E6F44             balanced indicator "="
+ *          oxblood #8C2F2A          disturbed indicator "≠"
  * Background fill: NEVER — clearRect only; CSS paper-glow vignette handles bg.
  */
 
 (function () {
   'use strict';
 
-  // ── Constants ────────────────────────────────────────────────────────────────
+  // ── Constants ─────────────────────────────────────────────────────────────────
 
-  const MAX_DPR      = 2;
-  const FONT_SIZE    = 12;        // px, logical
-  const FONT         = FONT_SIZE + 'px "JetBrains Mono", "Courier New", monospace';
+  const MAX_DPR = 2;
 
-  const RULE_SPACING = 40;        // px between horizontal rule lines
-  const DRIFT_SPEED  = 6;         // px/sec downward — barely perceptible
+  // Color palette
+  const INK_RGB     = '26,26,24';
+  const PINE_RGB    = '30,111,68';
+  const OXBLOOD_RGB = '140,47,42';
 
-  // Rule line style
-  const RULE_COLOR   = 'rgba(26,26,24,0.05)';
+  // Stroke alphas (high-contrast — bold but tasteful)
+  const ALPHA_STRUCT   = 0.52;   // post, base, beam, chains, pans
+  const ALPHA_LABEL    = 0.50;   // DEBIT / CREDIT labels
+  const ALPHA_AMOUNT   = 0.48;   // amount on each pan
+  const ALPHA_INDICATOR = 0.82;  // = / ≠ indicator near pivot
 
-  // Figure text: ink at low alpha
-  const FIGURE_ALPHA = 0.07;
-  const INK          = '26,26,24';
+  // Spring physics
+  const SPRING_STIFFNESS = 14;   // higher = faster return
+  const SPRING_DAMPING   = 5.5;  // higher = less wobble
+  const MAX_TILT_DEG     = 11;   // max beam tilt in degrees (cursor at edge)
+  const AMBIENT_AMP_DEG  = 0.5;  // subtle ambient sway amplitude (degrees)
+  const AMBIENT_PERIOD   = 6.2;  // seconds for one ambient sway cycle
+  const LEVEL_THRESHOLD  = 1.2;  // degrees — within this → "balanced" (pine)
 
-  // '=' sign: pine green, slightly more present
-  const PINE_EQ      = 'rgba(30,111,68,0.13)';
+  // Scale sizing (logical px, before DPR)
+  const BASE_SCALE = 0.38;       // rig height as fraction of viewport height
+  const MIN_HEIGHT = 260;        // px minimum rig height
+  const MAX_HEIGHT = 520;        // px maximum rig height
 
-  // Centre-band horizontal range (fraction of W) — figures slightly dimmer here
-  const BAND_LEFT    = 0.25;
-  const BAND_RIGHT   = 0.75;
-  const BAND_DIM     = 0.55;      // multiply alpha by this when inside band
+  const AMOUNT_TEXT = '5,910.00';
+  const FONT_MONO   = '"JetBrains Mono", "Courier New", monospace';
 
-  // Balanced ledger figure strings (left side = right side)
-  const FIGURES = [
-    '1,240.00 = 1,240.00',
-    '5,910.00 = 5,910.00',
-    '  800.00 =   800.00',
-    '3,072.50 = 3,072.50',
-    '12,500.00 = 12,500.00',
-    '  415.00 =   415.00',
-    ' 6,000.00 =  6,000.00',
-    '9,875.25 = 9,875.25',
-  ];
-
-  // ── State ────────────────────────────────────────────────────────────────────
+  // ── State ─────────────────────────────────────────────────────────────────────
 
   let canvas, ctx;
   let dpr = 1;
   let W = 0, H = 0;
 
-  // Each "row" is one rule line that travels downward.
-  // rows[i] = { baseY: float, figure: string|null, figureX: float }
-  // baseY is the Y offset of this row within one "sheet" height.
-  // The visible Y is (baseY + offset) mod sheetH.
-  let rows = [];
-  let sheetH = 0;    // total height of one seamless-loop unit
-  let offset = 0;    // current downward drift in px (always grows)
+  // Rig geometry (recomputed on resize)
+  let rig = {};
+
+  // Spring state
+  let angle     = 0;   // current beam angle, radians (+ = right side down)
+  let velocity  = 0;   // angular velocity, rad/s
+  let targetAngle = 0; // driven by cursor
+
+  // Cursor state
+  let cursorX = null;
+  let cursorY = null;
 
   let lastTime    = null;
   let raf         = null;
@@ -70,7 +70,7 @@
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ── Bootstrap ────────────────────────────────────────────────────────────────
+  // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -89,16 +89,26 @@
     window.addEventListener('resize', onResize, { passive: true });
 
     if (reducedMotion) {
-      drawFrame(0);   // one static frame, no animation
+      // One static frame: scale perfectly level, pine "=", no listeners.
+      drawScale(0, 0);
       return;
     }
+
+    // Pointer listeners — cursor disturbs the beam.
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('mouseleave', onPointerLeave, { passive: true });
+    window.addEventListener('touchend',  onPointerLeave, { passive: true });
 
     raf = requestAnimationFrame(tick);
   }
 
-  // ── Layout ───────────────────────────────────────────────────────────────────
+  // ── Layout ────────────────────────────────────────────────────────────────────
 
-  /** Resize canvas and rebuild row layout. Resets transform before re-scaling. */
+  /**
+   * Resize canvas and recompute rig geometry.
+   * Resets transform before re-scaling (required after canvas resize).
+   */
   function resize() {
     W = window.innerWidth;
     H = window.innerHeight;
@@ -111,50 +121,44 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
 
-    buildRows();
+    buildRig();
   }
 
   /**
-   * Build the list of rule rows that make up one seamless loop.
-   * We need enough rows to cover the viewport plus one extra RULE_SPACING
-   * above and below so the loop is invisible.
-   *
-   * sheetH = total vertical span of one loop = rows * RULE_SPACING.
-   * We keep sheetH just large enough to cover H + RULE_SPACING,
-   * then drift offset modulo sheetH.
-   *
-   * For each row, decide (sparsely) whether to place a figure and at what X.
-   * Figure placement: every 3rd or 4th row, not every column.
+   * Compute all static rig measurements from current W/H.
+   * rigH = total visual height of the rig (base to pivot), clamped.
    */
-  function buildRows() {
-    const numRows = Math.ceil((H + RULE_SPACING * 2) / RULE_SPACING) + 1;
-    sheetH = numRows * RULE_SPACING;
+  function buildRig() {
+    const rigH  = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, H * BASE_SCALE));
 
-    rows = [];
-    for (let i = 0; i < numRows; i++) {
-      const baseY = i * RULE_SPACING;
+    const cx     = W / 2;
+    const pivotY = H * 0.5 - rigH * 0.18; // pivot slightly above midpoint
+    const baseY  = pivotY + rigH;
+    const baseHalfW = rigH * 0.30;         // half-width of the base bar
+    const postW     = rigH * 0.015;        // visual half-width of post (for drawing)
 
-      // Sparse figure: roughly every 3rd–4th row gets one
-      const placeFigure = pseudoRand(i * 137 + 7) < 0.30;
-      let figure  = null;
-      let figureX = 0;
+    // Beam: half-span from pivot
+    const beamHalf  = rigH * 0.60;
 
-      if (placeFigure) {
-        const fi = Math.floor(pseudoRand(i * 293 + 41) * FIGURES.length);
-        figure = FIGURES[fi];
+    // Chain length from beam end to pan top
+    const chainLen  = rigH * 0.28;
 
-        // Distribute figures toward margins — avoid dead centre
-        // Pick from left quarter or right quarter of viewport
-        const side = pseudoRand(i * 503 + 19) < 0.5 ? 'left' : 'right';
-        if (side === 'left') {
-          figureX = pseudoRand(i * 701 + 3) * W * 0.28 + W * 0.02;
-        } else {
-          figureX = W * 0.68 + pseudoRand(i * 701 + 3) * W * 0.28;
-        }
-      }
+    // Pan: shallow bowl dimensions
+    const panHalfW  = rigH * 0.18;
+    const panDepth  = rigH * 0.05;
 
-      rows.push({ baseY, figure, figureX });
-    }
+    // Font sizes scaled with rig
+    const labelSize = Math.max(10, Math.min(15, rigH * 0.042));
+    const amtSize   = Math.max(9,  Math.min(13, rigH * 0.036));
+    const indSize   = Math.max(14, Math.min(24, rigH * 0.058));
+
+    rig = {
+      cx, pivotY, baseY, baseHalfW, postW,
+      beamHalf, chainLen,
+      panHalfW, panDepth,
+      labelSize, amtSize, indSize,
+      rigH,
+    };
   }
 
   function onResize() {
@@ -164,76 +168,231 @@
     }, 120);
   }
 
-  // ── Figures ───────────────────────────────────────────────────────────────────
+  // ── Spring + Pointer ──────────────────────────────────────────────────────────
 
-  /**
-   * Draw a balanced-figure string at (x, y).
-   * Figures are rendered character-by-character so the '=' can be pine green.
-   * Spaces are skipped. Alpha is dimmed when x falls in the centre band.
-   */
-  function drawFigure(figure, x, y) {
-    // Determine if this x position is in the centre band
-    const xNorm   = x / W;
-    const inBand  = xNorm > BAND_LEFT && xNorm < BAND_RIGHT;
-    const alpha   = inBand ? FIGURE_ALPHA * BAND_DIM : FIGURE_ALPHA;
+  function onMouseMove(e) {
+    cursorX = e.clientX;
+    cursorY = e.clientY;
+  }
 
-    ctx.textBaseline = 'alphabetic';
-    ctx.font = FONT;
-
-    let cx = x;
-    for (let i = 0; i < figure.length; i++) {
-      const ch = figure[i];
-      if (ch === ' ') {
-        cx += FONT_SIZE * 0.6;   // monospace space advance
-        continue;
-      }
-      if (ch === '=') {
-        ctx.fillStyle = PINE_EQ;
-      } else {
-        ctx.fillStyle = 'rgba(' + INK + ',' + alpha.toFixed(3) + ')';
-      }
-      ctx.fillText(ch, cx, y);
-      cx += FONT_SIZE * 0.6;
+  function onTouchMove(e) {
+    if (e.touches.length > 0) {
+      cursorX = e.touches[0].clientX;
+      cursorY = e.touches[0].clientY;
     }
   }
 
-  // ── Draw ──────────────────────────────────────────────────────────────────────
+  function onPointerLeave() {
+    cursorX = null;
+    cursorY = null;
+  }
 
   /**
-   * Render one frame. `currentOffset` is the current downward drift in px.
-   * Rule lines and figures are drawn using modular arithmetic so the sheet
-   * loops seamlessly.
+   * Compute targetAngle from cursor position.
+   * Horizontal offset from center → tilt direction.
+   * Optional vertical proximity weighting: cursor near beam level → stronger effect.
    */
-  function drawFrame(currentOffset) {
+  function computeTargetAngle(t) {
+    const ambient = (AMBIENT_AMP_DEG * Math.PI / 180) * Math.sin((2 * Math.PI * t) / AMBIENT_PERIOD);
+
+    if (cursorX === null || cursorY === null) {
+      return ambient;
+    }
+
+    // Normalized horizontal offset [-1, +1]
+    const normX = (cursorX - W / 2) / (W / 2);
+
+    // Vertical proximity: 1.0 when cursor at beam level, fades over ~40% of H
+    const beamY = rig.pivotY;
+    const vDist = Math.abs(cursorY - beamY) / (H * 0.4);
+    const vFactor = Math.max(0, 1 - vDist);
+
+    // Base tilt scaled by cursor offset, boosted by vertical proximity
+    const tiltMag = normX * (0.5 + 0.5 * vFactor);
+    const maxRad  = MAX_TILT_DEG * Math.PI / 180;
+    return tiltMag * maxRad + ambient;
+  }
+
+  /**
+   * Step the spring by dt seconds toward targetAngle.
+   * Frame-rate independent semi-implicit Euler integration.
+   */
+  function stepSpring(dt) {
+    const err = angle - targetAngle;
+    const acc = -SPRING_STIFFNESS * err - SPRING_DAMPING * velocity;
+    velocity += acc * dt;
+    angle    += velocity * dt;
+  }
+
+  // ── Draw Scale ────────────────────────────────────────────────────────────────
+
+  /**
+   * Draw the complete balance scale for the given beam angle (radians) and
+   * elapsed time t (seconds, used only for ambient sway phase label).
+   */
+  function drawScale(beamAngle, _t) {
     ctx.clearRect(0, 0, W, H);
 
-    ctx.lineWidth     = 0.5 / dpr;
-    ctx.strokeStyle   = RULE_COLOR;
+    const {
+      cx, pivotY, baseY, baseHalfW, postW,
+      beamHalf, chainLen,
+      panHalfW, panDepth,
+      labelSize, amtSize, indSize,
+    } = rig;
 
-    // Compute the phase: how far into the current sheet we are
-    const phase = currentOffset % sheetH;
+    // Determine balanced vs. disturbed
+    const tiltDeg = Math.abs(beamAngle * 180 / Math.PI);
+    const isLevel = tiltDeg < LEVEL_THRESHOLD;
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      // Visible Y: baseY shifted by drift phase, wrapped into view
-      let y = row.baseY + phase;
-      // Wrap so lines are always within [-RULE_SPACING, H + RULE_SPACING]
-      if (y > H + RULE_SPACING) y -= sheetH;
+    // Color for structural elements: slight tint toward oxblood when disturbed,
+    // toward pine when settled — but always mostly ink.
+    const structColor = 'rgba(' + INK_RGB + ',' + ALPHA_STRUCT + ')';
 
-      // Skip rows that are definitely off-screen
-      if (y < -RULE_SPACING || y > H + RULE_SPACING) continue;
+    ctx.lineCap  = 'round';
+    ctx.lineJoin = 'round';
 
-      // Draw rule line
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
+    // ── Base and post ──
 
-      // Draw figure sitting on this rule line (if assigned)
-      if (row.figure !== null) {
-        drawFigure(row.figure, row.figureX, y - 3);
-      }
-    }
+    ctx.strokeStyle = structColor;
+
+    // Base bar (horizontal footing)
+    const baseThick = Math.max(3, rig.rigH * 0.018);
+    ctx.lineWidth = baseThick;
+    ctx.beginPath();
+    ctx.moveTo(cx - baseHalfW, baseY);
+    ctx.lineTo(cx + baseHalfW, baseY);
+    ctx.stroke();
+
+    // Center foot (small vertical stub below base for stability look)
+    ctx.lineWidth = baseThick * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(cx, baseY);
+    ctx.lineTo(cx, baseY + baseThick * 1.2);
+    ctx.stroke();
+
+    // Vertical post
+    const postLineW = Math.max(2, rig.rigH * 0.012);
+    ctx.lineWidth = postLineW;
+    ctx.beginPath();
+    ctx.moveTo(cx, baseY);
+    ctx.lineTo(cx, pivotY);
+    ctx.stroke();
+
+    // ── Pivot marker: bold dot ──
+
+    ctx.fillStyle = structColor;
+    const pivotR = Math.max(4, rig.rigH * 0.025);
+    ctx.beginPath();
+    ctx.arc(cx, pivotY, pivotR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── Beam ──
+
+    // Beam endpoints (rotated about pivot)
+    const cosA = Math.cos(beamAngle);
+    const sinA = Math.sin(beamAngle);
+
+    const lx = cx - beamHalf * cosA;
+    const ly = pivotY - beamHalf * sinA;  // left end (negative x offset)
+    const rx = cx + beamHalf * cosA;
+    const ry = pivotY + beamHalf * sinA;  // right end (positive x offset)
+    // Note: +angle means right side goes DOWN (sinA positive → ry > pivotY)
+
+    const beamThick = Math.max(3, rig.rigH * 0.016);
+    ctx.strokeStyle = structColor;
+    ctx.lineWidth   = beamThick;
+    ctx.beginPath();
+    ctx.moveTo(lx, ly);
+    ctx.lineTo(rx, ry);
+    ctx.stroke();
+
+    // ── Chains and pans ──
+
+    // Chains hang straight down from each beam end (gravity, not rotated with beam).
+    // Left pan
+    drawChainAndPan(lx, ly, chainLen, panHalfW, panDepth, structColor,
+                    'DEBIT', labelSize, amtSize, 'left');
+    // Right pan
+    drawChainAndPan(rx, ry, chainLen, panHalfW, panDepth, structColor,
+                    'CREDIT', labelSize, amtSize, 'right');
+
+    // ── Balance indicator near pivot ──
+
+    const indText  = isLevel ? '=' : '≠';
+    const indRGB   = isLevel ? PINE_RGB : OXBLOOD_RGB;
+    const indColor = 'rgba(' + indRGB + ',' + ALPHA_INDICATOR + ')';
+
+    ctx.fillStyle    = indColor;
+    ctx.font         = 'bold ' + indSize + 'px ' + FONT_MONO;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(indText, cx, pivotY - pivotR - indSize * 0.9);
+  }
+
+  /**
+   * Draw chain (two converging lines from beam endpoint down to pan top)
+   * then a shallow pan bowl, label, and amount.
+   *
+   * chainTopX/Y: where the chain meets the beam end.
+   * Pans hang vertically (straight down) regardless of beam angle.
+   */
+  function drawChainAndPan(chainTopX, chainTopY, chainLen, panHalfW, panDepth,
+                            strokeColor, label, labelSize, amtSize, side) {
+    const panTopY = chainTopY + chainLen;
+    const panBotY = panTopY + panDepth;
+
+    ctx.strokeStyle = strokeColor;
+
+    // Chain: two lines converging from a wide spread at the beam end
+    // to the pan corners — classic "V" bale shape.
+    const spreadX = panHalfW * 0.45; // spread at beam end attachment
+    const chainW  = Math.max(1.5, rig.rigH * 0.009);
+
+    ctx.lineWidth = chainW;
+    ctx.beginPath();
+    // Left chain strand
+    ctx.moveTo(chainTopX - spreadX, chainTopY);
+    ctx.lineTo(chainTopX - panHalfW, panTopY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    // Right chain strand
+    ctx.moveTo(chainTopX + spreadX, chainTopY);
+    ctx.lineTo(chainTopX + panHalfW, panTopY);
+    ctx.stroke();
+
+    // Pan bowl: arc from left corner through bottom center to right corner
+    const panThick = Math.max(2.5, rig.rigH * 0.014);
+    ctx.lineWidth  = panThick;
+    ctx.beginPath();
+    ctx.moveTo(chainTopX - panHalfW, panTopY);
+    ctx.quadraticCurveTo(chainTopX, panBotY + panDepth * 0.6, chainTopX + panHalfW, panTopY);
+    ctx.stroke();
+
+    // Horizontal top rail of pan (the rim)
+    ctx.lineWidth = panThick * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(chainTopX - panHalfW, panTopY);
+    ctx.lineTo(chainTopX + panHalfW, panTopY);
+    ctx.stroke();
+
+    // Label (DEBIT / CREDIT) — above the pan rim
+    const labelY    = panTopY - labelSize * 1.0;
+    const labelColor = 'rgba(' + INK_RGB + ',' + ALPHA_LABEL + ')';
+    ctx.fillStyle    = labelColor;
+    ctx.font         = 'bold ' + labelSize + 'px ' + FONT_MONO;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(label, chainTopX, labelY);
+
+    // Amount — inside/below pan (sits in the bowl visually)
+    const amtY    = panBotY + panDepth * 0.9 + amtSize * 1.1;
+    const amtColor = 'rgba(' + INK_RGB + ',' + ALPHA_AMOUNT + ')';
+    ctx.fillStyle  = amtColor;
+    ctx.font       = amtSize + 'px ' + FONT_MONO;
+    ctx.textAlign  = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(AMOUNT_TEXT, chainTopX, amtY);
   }
 
   // ── Animation loop ────────────────────────────────────────────────────────────
@@ -245,22 +404,11 @@
     const dt = Math.min((now - lastTime) * 0.001, 0.05); // cap at 50 ms
     lastTime = now;
 
-    offset += DRIFT_SPEED * dt;
+    const t = now * 0.001; // seconds since page load
 
-    drawFrame(offset);
-  }
+    targetAngle = computeTargetAngle(t);
+    stepSpring(dt);
 
-  // ── Utilities ─────────────────────────────────────────────────────────────────
-
-  /**
-   * Deterministic float [0,1) from an integer seed.
-   * Used only during layout (buildRows / drawFigure) — not in the hot draw path.
-   */
-  function pseudoRand(n) {
-    n = n | 0;
-    n = ((n >> 16) ^ n) * 0x45d9f3b | 0;
-    n = ((n >> 16) ^ n) * 0x45d9f3b | 0;
-    n = (n >> 16) ^ n;
-    return (n >>> 0) / 0x100000000;
+    drawScale(angle, t);
   }
 })();
