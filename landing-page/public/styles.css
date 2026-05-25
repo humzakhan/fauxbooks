@@ -11,7 +11,8 @@
   --ink:      #1A1A18;
   --muted:    #6B6862;
   --hairline: #E6E2D8;
-  --accent:   #8C2F2A;   /* oxblood — .gh-link, .prompt, .balance only */
+  --accent:   #8C2F2A;   /* oxblood — credits / "in the red" */
+  --pine:     #1E6F44;   /* forest green — debits / "in the black" */
 }
 
 /* ---------------------------------------------------------
@@ -38,6 +39,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "tnum" 1, "lnum" 1;
   min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   Content vignette — floats above canvas, below page
+   --------------------------------------------------------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 70% at 50% 42%,
+    rgba(250, 248, 243, 0.88) 0%,
+    rgba(250, 248, 243, 0.55) 45%,
+    rgba(250, 248, 243, 0) 80%
+  );
 }
 
 /* ---------------------------------------------------------
@@ -89,6 +107,9 @@ body {
   color: var(--accent);
   text-decoration: none;
   letter-spacing: 0.01em;
+  background: var(--paper);
+  padding: 3px 8px;
+  border-radius: 5px;
 }
 
 .gh-link:hover {
@@ -111,6 +132,27 @@ body {
   color: var(--ink);
 }
 
+/* Headline accent word — pine with animated draw-in underline */
+.hl-reconciles {
+  color: var(--pine);
+  background-image: linear-gradient(var(--pine), var(--pine));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  animation: underline-draw 700ms ease 300ms forwards;
+}
+
+@keyframes underline-draw {
+  to { background-size: 100% 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-reconciles {
+    animation: none;
+    background-size: 100% 2px;
+  }
+}
+
 .subhead {
   font-family: 'Inter', sans-serif;
   font-size: 1.05rem;
@@ -122,7 +164,10 @@ body {
 
 /* Command block */
 .command {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   border: 1px solid var(--hairline);
   border-radius: 4px;
   padding: 14px 18px;
@@ -130,8 +175,57 @@ body {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.9rem;
   background: rgba(255, 255, 255, 0.45);
-  white-space: nowrap;
+}
+
+/* Command line (text portion) — scrolls independently */
+.command-line {
   overflow-x: auto;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Blinking block caret after the command line */
+.command-line::after {
+  content: "▋";
+  color: var(--pine);
+  margin-left: 2px;
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-line::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Copy button */
+.copy-btn {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.copy-btn:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
+.copy-btn.copied {
+  color: var(--pine);
+  border-color: var(--pine);
 }
 
 .prompt {
@@ -174,6 +268,14 @@ body {
   gap: 2rem 2.5rem;
 }
 
+.feature {
+  transition: transform 0.2s ease;
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+}
+
 .feature h3 {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.95rem;
@@ -181,6 +283,25 @@ body {
   color: var(--ink);
   margin-bottom: 0.35rem;
   letter-spacing: -0.01em;
+}
+
+/* Tri-color rhythm: pine / oxblood / ink */
+.feature:nth-child(1) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--pine);
+}
+
+.feature:nth-child(2) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--accent);
+}
+
+.feature:nth-child(3) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--muted);
 }
 
 .feature p {
@@ -268,9 +389,34 @@ body {
   padding: 0;
 }
 
-/* Oxblood accent — balance row only */
-.balance {
-  color: var(--accent);
+/* GL column colouring — debit / credit */
+.dr { color: var(--pine); }
+.cr { color: var(--accent); }
+
+/* Balance badge — JS animates .bal-num from 0.00 to final value */
+.balance-badge {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.5rem 0 0.25rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+}
+
+.bal-num {
+  color: var(--pine);
+  font-weight: 500;
+}
+
+.bal-check {
+  color: var(--pine);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.balance-badge.is-balanced .bal-check {
+  opacity: 1;
 }
 
 /* Caption */
@@ -367,5 +513,25 @@ body {
 
   .command {
     font-size: 0.78rem;
+    gap: 0.5rem;
+    padding: 12px 14px;
+  }
+
+  .copy-btn {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+  }
+}
+
+@media (max-width: 360px) {
+  .command {
+    font-size: 0.72rem;
+    gap: 0.4rem;
+    padding: 10px 12px;
+  }
+
+  .copy-btn {
+    font-size: 0.65rem;
+    padding: 2px 6px;
   }
 }
