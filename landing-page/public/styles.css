@@ -46,19 +46,6 @@ body {
 }
 
 /* ---------------------------------------------------------
-   Background canvas — sits behind everything
-   --------------------------------------------------------- */
-#ascii-bg {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  display: block;
-}
-
-/* ---------------------------------------------------------
    Band system — full-bleed section rows
    --------------------------------------------------------- */
 .band {
@@ -76,17 +63,17 @@ body {
   padding-right: var(--col-pad);
 }
 
-/* Background modifiers */
+/* Background modifiers — all bands show the paper body background */
 .band--paper {
-  background: transparent; /* canvas animation shows through */
+  background: transparent;
 }
 
 .band--ink {
-  background: var(--ink);
+  background: transparent;
 }
 
 .band--pine {
-  background: var(--pine);
+  background: transparent;
 }
 
 /* Per-band vertical rhythm */
@@ -121,159 +108,15 @@ body {
 }
 
 /* ---------------------------------------------------------
-   Solid-band textures — features-band (ink)
+   Hairline rule — separates paper sections
    --------------------------------------------------------- */
-.features-band {
-  overflow: hidden;   /* clip pseudo-elements */
-}
-
-/* ::before — dot-grid pattern + subtle depth gradient */
-.features-band::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle, rgba(250,248,243,0.05) 1px, transparent 1.5px),
-    linear-gradient(to bottom, rgba(250,248,243,0.04) 0%, transparent 40%, rgba(0,0,0,0.06) 100%);
-  background-size: 22px 22px, 100% 100%;
-  background-position: 0 0, 0 0;
-}
-
-/* ::after — large faint ledger watermark glyph, anchored bottom-right */
-.features-band::after {
-  content: "Σ";
-  position: absolute;
-  bottom: -0.1em;
-  right: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: clamp(8rem, 22vw, 16rem);
-  line-height: 1;
-  color: rgba(250,248,243,0.04);
-  pointer-events: none;
-  z-index: 0;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Slow dot-grid drift for users who have no reduced-motion preference */
-@media (prefers-reduced-motion: no-preference) {
-  .features-band::before {
-    animation: dot-drift-dark 60s linear infinite;
-  }
-}
-
-@keyframes dot-drift-dark {
-  from { background-position: 0 0,    0 0; }
-  to   { background-position: 22px 22px, 0 0; }
-}
-
-/* Ensure content sits above pseudo-elements */
-.features-band > .wrap {
-  position: relative;
-  z-index: 1;
-}
-
-/* ---------------------------------------------------------
-   Solid-band textures — cta-band (pine)
-   --------------------------------------------------------- */
-.cta-band {
-  overflow: hidden;
-}
-
-.cta-band::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1.5px),
-    linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 45%, rgba(0,0,0,0.07) 100%);
-  background-size: 22px 22px, 100% 100%;
-  background-position: 0 0, 0 0;
-}
-
-/* Watermark: "= credits" anchored bottom-left of the column */
-.cta-band::after {
-  content: "= credits";
-  position: absolute;
-  bottom: -0.1em;
-  left: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: clamp(4rem, 12vw, 9rem);
-  line-height: 1;
-  color: rgba(255,255,255,0.06);
-  pointer-events: none;
-  z-index: 0;
-  user-select: none;
-  -webkit-user-select: none;
-  white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .cta-band::before {
-    animation: dot-drift-pine 60s linear infinite;
-  }
-}
-
-@keyframes dot-drift-pine {
-  from { background-position: 0 0,    0 0; }
-  to   { background-position: 22px 22px, 0 0; }
-}
-
-.cta-band > .wrap {
-  position: relative;
-  z-index: 1;
-}
-
-/* ---------------------------------------------------------
-   Solid-band textures — footer-band (ink)
-   --------------------------------------------------------- */
-.footer-band {
-  overflow: hidden;
-}
-
-.footer-band::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle, rgba(250,248,243,0.05) 1px, transparent 1.5px),
-    linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(250,248,243,0.02) 100%);
-  background-size: 22px 22px, 100% 100%;
-  background-position: 0 0, 0 0;
-}
-
-/* Watermark: "debits =" anchored top-right, very faint */
-.footer-band::after {
-  content: "debits =";
-  position: absolute;
-  top: -0.15em;
-  right: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: clamp(3rem, 10vw, 7rem);
-  line-height: 1;
-  color: rgba(250,248,243,0.04);
-  pointer-events: none;
-  z-index: 0;
-  user-select: none;
-  -webkit-user-select: none;
-  white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .footer-band::before {
-    animation: dot-drift-dark 60s linear infinite;
-  }
-}
-
-.footer-band > .wrap {
-  position: relative;
-  z-index: 1;
+.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 0 auto;
+  max-width: var(--col-max);
+  padding: 0 var(--col-pad);
+  box-sizing: content-box;
 }
 
 /* ---------------------------------------------------------
@@ -421,26 +264,6 @@ body {
 .copy-btn.copied {
   color: var(--pine);
   border-color: var(--pine);
-}
-
-/* Copy button variant for the pine CTA band */
-.copy-btn--onpine {
-  color: rgba(250, 248, 243, 0.70);
-  border-color: rgba(250, 248, 243, 0.40);
-  background: transparent;
-  vertical-align: middle;
-  margin-left: 0.4em;
-}
-
-.copy-btn--onpine:hover {
-  color: var(--paper);
-  border-color: rgba(250, 248, 243, 0.80);
-  background: rgba(250, 248, 243, 0.08);
-}
-
-.copy-btn--onpine.copied {
-  color: var(--paper);
-  border-color: var(--paper);
 }
 
 .prompt {
@@ -621,12 +444,8 @@ body {
 }
 
 /* ---------------------------------------------------------
-   Features band — ink background
+   Features band — paper background
    --------------------------------------------------------- */
-.features-band {
-  color: var(--paper);
-}
-
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -645,12 +464,12 @@ body {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--paper);
+  color: var(--ink);
   margin-bottom: 0.35rem;
   letter-spacing: -0.01em;
 }
 
-/* All three markers pine — pops on dark background */
+/* All three markers pine — accent on paper */
 .feature:nth-child(1) h3::before {
   content: "▪";
   margin-right: 0.4rem;
@@ -669,11 +488,10 @@ body {
   color: var(--pine);
 }
 
-/* [3] LEGIBILITY — feature paragraph: was rgba(250,248,243,0.62), now 0.82 */
 .features-band .feature p {
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
-  color: rgba(250, 248, 243, 0.82);
+  color: rgba(26, 26, 24, 0.72);
   line-height: 1.5;
 }
 
@@ -846,7 +664,7 @@ body {
 }
 
 /* ---------------------------------------------------------
-   CTA band — pine background
+   CTA band — paper background
    --------------------------------------------------------- */
 .cta {
   /* stacks naturally */
@@ -857,16 +675,16 @@ body {
   font-size: clamp(1.5rem, 4vw, 1.8rem);
   font-weight: 400;
   letter-spacing: -0.015em;
-  color: var(--paper);
+  color: var(--ink);
   margin-bottom: 1.25rem;
 }
 
-/* [3] LEGIBILITY — cta-install: already 0.92 — confirmed, no change needed */
 .cta-install {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.9rem;
-  color: rgba(250, 248, 243, 0.92);
-  background: rgba(0, 0, 0, 0.12);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--hairline);
   border-radius: 5px;
   display: inline-block;
   padding: 8px 14px;
@@ -874,7 +692,7 @@ body {
 }
 
 .cta-prompt {
-  color: rgba(250, 248, 243, 0.55);
+  color: var(--accent);
   user-select: none;
   -webkit-user-select: none;
   margin-right: 0.5em;
@@ -899,34 +717,32 @@ body {
 }
 
 .btn--solid {
-  background: var(--paper);
-  color: var(--pine);
+  background: var(--pine);
+  color: var(--paper);
   font-weight: 600;
   border: 1px solid transparent;
 }
 
 .btn--solid:hover {
-  background: #EDE9E0;
+  background: #185c38;
 }
 
 .btn--ghost {
   background: transparent;
-  color: var(--paper);
-  border: 1px solid rgba(250, 248, 243, 0.55);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
 }
 
 .btn--ghost:hover {
-  background: rgba(250, 248, 243, 0.1);
-  border-color: rgba(250, 248, 243, 0.8);
+  border-color: var(--muted);
 }
 
 /* ---------------------------------------------------------
-   Footer band — ink background
+   Footer band — paper background
    --------------------------------------------------------- */
-/* [3] LEGIBILITY — footer: was rgba(250,248,243,0.6), now 0.70 */
 .footer-band {
-  color: rgba(250, 248, 243, 0.70);
-  text-align: left;  /* explicit left-align to match column spine */
+  color: rgba(26, 26, 24, 0.60);
+  text-align: left;
 }
 
 .footer {
@@ -935,9 +751,8 @@ body {
   line-height: 1.5;
 }
 
-/* [3] LEGIBILITY — footer links: clearly paper-colored */
 .footer-band a {
-  color: var(--paper);
+  color: var(--ink);
   text-decoration: none;
 }
 

@@ -9,12 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
-    <script src="./ascii-bg.js" defer></script>
     <script src="./interactions.js" defer></script>
   </head>
   <body>
-    <canvas id="ascii-bg" aria-hidden="true"></canvas>
-
     <header class="band band--paper top-band">
       <div class="wrap masthead">
         <span class="wordmark">fauxbooks</span>
@@ -36,13 +33,17 @@
       </div>
     </section>
 
-    <section class="band band--ink features-band">
+    <hr class="rule">
+
+    <section class="band band--paper features-band">
       <div class="wrap features">
         <div class="feature"><h3>deterministic</h3><p>same seed → same bytes, every OS</p></div>
         <div class="feature"><h3>reconcilable</h3><p>Σ debits = Σ credits, every run</p></div>
         <div class="feature"><h3>single binary</h3><p>no CGo, no deps · csv · jsonl · xlsx</p></div>
       </div>
     </section>
+
+    <hr class="rule">
 
     <section class="band band--paper examples-band">
       <div class="wrap examples">
@@ -72,10 +73,12 @@ JE-00000001   1300      <span class="dr">0.000000000</span>       <span class="c
       </div>
     </section>
 
-    <section class="band band--pine cta-band">
+    <hr class="rule">
+
+    <section class="band band--paper cta-band">
       <div class="wrap cta">
         <h2 class="cta-title">Reconcilable books in one command.</h2>
-        <p class="cta-install"><span class="cta-prompt">$</span> <span id="install-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span> <button class="copy-btn copy-btn--onpine" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button></p>
+        <p class="cta-install"><span class="cta-prompt">$</span> <span id="install-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span> <button class="copy-btn" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button></p>
         <div class="cta-actions">
           <a class="btn btn--solid" href="https://github.com/humzakhan/fauxbooks">Get started →</a>
           <a class="btn btn--ghost" href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">Read the docs ↗</a>
@@ -83,7 +86,9 @@ JE-00000001   1300      <span class="dr">0.000000000</span>       <span class="c
       </div>
     </section>
 
-    <footer class="band band--ink footer-band">
+    <hr class="rule">
+
+    <footer class="band band--paper footer-band">
       <div class="wrap footer">fauxbooks · MIT · <a href="https://github.com/humzakhan/fauxbooks">github.com/humzakhan/fauxbooks</a></div>
     </footer>
   </body>
