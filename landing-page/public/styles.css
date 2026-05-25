@@ -52,8 +52,8 @@ body::before {
   pointer-events: none;
   background: radial-gradient(
     ellipse 60% 70% at 50% 42%,
-    rgba(250, 248, 243, 0.88) 0%,
-    rgba(250, 248, 243, 0.55) 45%,
+    rgba(250, 248, 243, 0.45) 0%,
+    rgba(250, 248, 243, 0.25) 45%,
     rgba(250, 248, 243, 0) 80%
   );
 }

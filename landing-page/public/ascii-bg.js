@@ -1,71 +1,67 @@
 /**
- * ascii-bg.js — "Double-Entry Balance Scale"
+ * ascii-bg.js — "Number Field + Cursor Wake"
  *
- * Draws a large, high-contrast balance scale (a double-entry accounting metaphor)
- * centered in the viewport on #ascii-bg. The cursor disturbs the beam; a spring
- * restores it to level. Pine green (= balanced) / oxblood (≠ disturbed).
+ * Full-viewport ambient grid of accounting digits that shimmers calmly at
+ * rest and is disrupted by the cursor:  a "parting bubble" directly under
+ * the pointer, a bright/pine scramble ring around it, and a ripple-shut
+ * trail as agitation decays behind the moving cursor.
  *
  * Canvas:  #ascii-bg — fixed, full viewport, pointer-events:none.
- * Colors:  ink  rgba(26,26,24, …)   structural strokes and labels
- *          pine #1E6F44             balanced indicator "="
- *          oxblood #8C2F2A          disturbed indicator "≠"
- * Background fill: NEVER — clearRect only; CSS paper-glow vignette handles bg.
+ * Colors:  ink  rgba(26,26,24,α)    resting digits
+ *          pine rgba(30,111,68,α)   agitation tint (on-brand wake)
+ * Background fill: NEVER — clearRect only; CSS vignette handles bg.
  */
 
 (function () {
   'use strict';
 
-  // ── Constants ─────────────────────────────────────────────────────────────────
+  // ── Grid constants ────────────────────────────────────────────────────────────
 
+  const CELL_W = 16;          // logical px per cell (horizontal)
+  const CELL_H = 22;          // logical px per cell (vertical)
   const MAX_DPR = 2;
 
-  // Color palette
-  const INK_RGB     = '26,26,24';
-  const PINE_RGB    = '30,111,68';
-  const OXBLOOD_RGB = '140,47,42';
+  // Glyph pools
+  const DIGITS  = '0123456789';
+  const ACCTING = '=$Σ+-.,'   ;  // accounting flavour symbols
+  const ACCENT_FRAC = 0.065;     // ~6.5 % of cells get an accounting glyph
 
-  // Stroke alphas (high-contrast — bold but tasteful)
-  const ALPHA_STRUCT   = 0.52;   // post, base, beam, chains, pans
-  const ALPHA_LABEL    = 0.50;   // DEBIT / CREDIT labels
-  const ALPHA_AMOUNT   = 0.48;   // amount on each pan
-  const ALPHA_INDICATOR = 0.82;  // = / ≠ indicator near pivot
+  const FONT_SIZE = 13;          // px — slightly smaller than cell for breathing room
+  const FONT_MONO = '"JetBrains Mono","Courier New",monospace';
 
-  // Spring physics
-  const SPRING_STIFFNESS = 14;   // higher = faster return
-  const SPRING_DAMPING   = 5.5;  // higher = less wobble
-  const MAX_TILT_DEG     = 11;   // max beam tilt in degrees (cursor at edge)
-  const AMBIENT_AMP_DEG  = 0.5;  // subtle ambient sway amplitude (degrees)
-  const AMBIENT_PERIOD   = 6.2;  // seconds for one ambient sway cycle
-  const LEVEL_THRESHOLD  = 1.2;  // degrees — within this → "balanced" (pine)
+  // ── Color constants ───────────────────────────────────────────────────────────
 
-  // Scale sizing (logical px, before DPR)
-  const BASE_SCALE = 0.38;       // rig height as fraction of viewport height
-  const MIN_HEIGHT = 260;        // px minimum rig height
-  const MAX_HEIGHT = 520;        // px maximum rig height
+  const INK_R  = 26,  INK_G  = 26,  INK_B  = 24;
+  const PINE_R = 30,  PINE_G = 111, PINE_B = 68;
 
-  const AMOUNT_TEXT = '5,910.00';
-  const FONT_MONO   = '"JetBrains Mono", "Courier New", monospace';
+  // Alpha range
+  const ALPHA_REST = 0.11;   // resting digit opacity (quiet presence)
+  const ALPHA_WAKE = 0.46;   // max opacity at full agitation (bright ring)
+
+  // ── Animation constants ───────────────────────────────────────────────────────
+
+  const REST_RATE    = 0.18;  // digit changes per second at rest (slow shimmer)
+  const SCRAMBLE_RATE = 16;   // extra changes/s at full agitation (fast scramble)
+  const K_SEED = 137.508;     // irrational multiplier for per-cell phase stagger
+
+  // Agitation
+  const DECAY      = 3.2;    // agitation decay rate (settles in ~0.3–0.4 s)
+  const OUTER_R    = 150;    // px — outer influence radius of cursor
+  const INNER_R    = 26;     // px — parting bubble radius (alpha → 0)
+  const MAX_PUSH   = 5;      // px — max radial displacement of glyphs near cursor
 
   // ── State ─────────────────────────────────────────────────────────────────────
 
   let canvas, ctx;
   let dpr = 1;
-  let W = 0, H = 0;
+  let W = 0, H = 0;         // logical viewport size
+  let cols = 0, rows = 0;   // grid dimensions
+  let agitation = null;      // Float32Array, length cols*rows
+  let seeds     = null;      // Float32Array, per-cell deterministic seed [0,1)
 
-  // Rig geometry (recomputed on resize)
-  let rig = {};
-
-  // Spring state
-  let angle     = 0;   // current beam angle, radians (+ = right side down)
-  let velocity  = 0;   // angular velocity, rad/s
-  let targetAngle = 0; // driven by cursor
-
-  // Cursor state
-  let cursorX = null;
-  let cursorY = null;
+  let cursorX = null, cursorY = null;
 
   let lastTime    = null;
-  let raf         = null;
   let resizeTimer = null;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -89,25 +85,25 @@
     window.addEventListener('resize', onResize, { passive: true });
 
     if (reducedMotion) {
-      // One static frame: scale perfectly level, pine "=", no listeners.
-      drawScale(0, 0);
+      // Static frame — resting digit grid, no listeners, no rAF.
+      drawFrame(0, 0);
       return;
     }
 
-    // Pointer listeners — cursor disturbs the beam.
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    // Pointer listeners — cursor drives agitation.
+    window.addEventListener('mousemove',  onMouseMove,   { passive: true });
+    window.addEventListener('touchmove',  onTouchMove,   { passive: true });
     window.addEventListener('mouseleave', onPointerLeave, { passive: true });
-    window.addEventListener('touchend',  onPointerLeave, { passive: true });
+    window.addEventListener('touchend',   onPointerLeave, { passive: true });
 
-    raf = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
   }
 
-  // ── Layout ────────────────────────────────────────────────────────────────────
+  // ── Grid / resize ─────────────────────────────────────────────────────────────
 
   /**
-   * Resize canvas and recompute rig geometry.
-   * Resets transform before re-scaling (required after canvas resize).
+   * Resize canvas to current viewport; recompute grid; reset transform.
+   * Called on load and on the debounced resize event.
    */
   function resize() {
     W = window.innerWidth;
@@ -118,57 +114,61 @@
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
 
+    // Reset transform before re-scaling (required after canvas resize).
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
 
-    buildRig();
+    buildGrid();
   }
 
   /**
-   * Compute all static rig measurements from current W/H.
-   * rigH = total visual height of the rig (base to pivot), clamped.
+   * Build the per-cell seed and agitation arrays from the new grid dimensions.
+   * Seeds are deterministic (hash of col+row) so glyphs don't jump on resize.
    */
-  function buildRig() {
-    const rigH  = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, H * BASE_SCALE));
+  function buildGrid() {
+    cols = Math.ceil(W / CELL_W) + 1;
+    rows = Math.ceil(H / CELL_H) + 1;
+    const n = cols * rows;
 
-    const cx     = W / 2;
-    const pivotY = H * 0.5 - rigH * 0.18; // pivot slightly above midpoint
-    const baseY  = pivotY + rigH;
-    const baseHalfW = rigH * 0.30;         // half-width of the base bar
-    const postW     = rigH * 0.015;        // visual half-width of post (for drawing)
+    agitation = new Float32Array(n);  // all zero — calm start
 
-    // Beam: half-span from pivot
-    const beamHalf  = rigH * 0.60;
-
-    // Chain length from beam end to pan top
-    const chainLen  = rigH * 0.28;
-
-    // Pan: shallow bowl dimensions
-    const panHalfW  = rigH * 0.18;
-    const panDepth  = rigH * 0.05;
-
-    // Font sizes scaled with rig
-    const labelSize = Math.max(10, Math.min(15, rigH * 0.042));
-    const amtSize   = Math.max(9,  Math.min(13, rigH * 0.036));
-    const indSize   = Math.max(14, Math.min(24, rigH * 0.058));
-
-    rig = {
-      cx, pivotY, baseY, baseHalfW, postW,
-      beamHalf, chainLen,
-      panHalfW, panDepth,
-      labelSize, amtSize, indSize,
-      rigH,
-    };
+    seeds = new Float32Array(n);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        // Cheap deterministic hash → [0,1)
+        const h = Math.sin(c * 127.1 + r * 311.7) * 43758.5453;
+        seeds[r * cols + c] = h - Math.floor(h);
+      }
+    }
   }
 
   function onResize() {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
-      resize();
-    }, 120);
+    resizeTimer = setTimeout(resize, 120);
   }
 
-  // ── Spring + Pointer ──────────────────────────────────────────────────────────
+  // ── Glyph pool ────────────────────────────────────────────────────────────────
+
+  /**
+   * Return the glyph for cell (c, r) at elapsed time t seconds.
+   * agit controls how fast the digit cycles (0 = slow rest, 1 = fast scramble).
+   */
+  function glyphAt(c, r, t, agit) {
+    const seed = seeds[r * cols + c];
+
+    // Determine whether this cell is an accounting-symbol cell (deterministic).
+    const isAccent = seed < ACCENT_FRAC;
+
+    const rate = REST_RATE + agit * SCRAMBLE_RATE;
+    const idx  = Math.floor(t * rate + seed * K_SEED);
+
+    if (isAccent) {
+      return ACCTING[Math.abs(idx) % ACCTING.length];
+    }
+    return DIGITS[Math.abs(idx) % DIGITS.length];
+  }
+
+  // ── Agitation + pointer ───────────────────────────────────────────────────────
 
   function onMouseMove(e) {
     cursorX = e.clientX;
@@ -185,230 +185,129 @@
   function onPointerLeave() {
     cursorX = null;
     cursorY = null;
+    // Existing agitation decays naturally — no hard reset.
   }
 
   /**
-   * Compute targetAngle from cursor position.
-   * Horizontal offset from center → tilt direction.
-   * Optional vertical proximity weighting: cursor near beam level → stronger effect.
+   * Decay all agitation and raise it near the cursor.
+   * Called once per frame before drawing.
+   *
+   * exp(-DECAY*dt) keeps the decay time-based and frame-rate independent.
    */
-  function computeTargetAngle(t) {
-    const ambient = (AMBIENT_AMP_DEG * Math.PI / 180) * Math.sin((2 * Math.PI * t) / AMBIENT_PERIOD);
+  function updateAgitation(dt) {
+    const decayFactor = Math.exp(-DECAY * dt);
 
-    if (cursorX === null || cursorY === null) {
-      return ambient;
+    for (let i = 0, n = agitation.length; i < n; i++) {
+      agitation[i] *= decayFactor;
+      if (agitation[i] < 0.001) agitation[i] = 0;
     }
 
-    // Normalized horizontal offset [-1, +1]
-    const normX = (cursorX - W / 2) / (W / 2);
+    if (cursorX === null || cursorY === null) return;
 
-    // Vertical proximity: 1.0 when cursor at beam level, fades over ~40% of H
-    const beamY = rig.pivotY;
-    const vDist = Math.abs(cursorY - beamY) / (H * 0.4);
-    const vFactor = Math.max(0, 1 - vDist);
+    // Raise agitation for cells within OUTER_R of cursor.
+    // Iterate only over the relevant cell range for performance.
+    const cMin = Math.max(0, Math.floor((cursorX - OUTER_R) / CELL_W));
+    const cMax = Math.min(cols - 1, Math.ceil((cursorX + OUTER_R) / CELL_W));
+    const rMin = Math.max(0, Math.floor((cursorY - OUTER_R) / CELL_H));
+    const rMax = Math.min(rows - 1, Math.ceil((cursorY + OUTER_R) / CELL_H));
 
-    // Base tilt scaled by cursor offset, boosted by vertical proximity
-    const tiltMag = normX * (0.5 + 0.5 * vFactor);
-    const maxRad  = MAX_TILT_DEG * Math.PI / 180;
-    return tiltMag * maxRad + ambient;
+    for (let r = rMin; r <= rMax; r++) {
+      const cy = r * CELL_H + CELL_H * 0.5;
+      for (let c = cMin; c <= cMax; c++) {
+        const cx = c * CELL_W + CELL_W * 0.5;
+        const dist = Math.sqrt((cx - cursorX) * (cx - cursorX) + (cy - cursorY) * (cy - cursorY));
+        if (dist >= OUTER_R) continue;
+
+        const influence = 1 - dist / OUTER_R;
+        const idx = r * cols + c;
+        if (influence > agitation[idx]) {
+          agitation[idx] = influence;
+        }
+      }
+    }
   }
 
-  /**
-   * Step the spring by dt seconds toward targetAngle.
-   * Frame-rate independent semi-implicit Euler integration.
-   */
-  function stepSpring(dt) {
-    const err = angle - targetAngle;
-    const acc = -SPRING_STIFFNESS * err - SPRING_DAMPING * velocity;
-    velocity += acc * dt;
-    angle    += velocity * dt;
-  }
-
-  // ── Draw Scale ────────────────────────────────────────────────────────────────
+  // ── Draw ──────────────────────────────────────────────────────────────────────
 
   /**
-   * Draw the complete balance scale for the given beam angle (radians) and
-   * elapsed time t (seconds, used only for ambient sway phase label).
+   * Draw all cells for the current frame.
+   * t  — elapsed seconds (for glyph cycling)
+   * dt — frame delta seconds (unused here; used in agitation already)
    */
-  function drawScale(beamAngle, _t) {
+  function drawFrame(t, _dt) {
     ctx.clearRect(0, 0, W, H);
 
-    const {
-      cx, pivotY, baseY, baseHalfW, postW,
-      beamHalf, chainLen,
-      panHalfW, panDepth,
-      labelSize, amtSize, indSize,
-    } = rig;
-
-    // Determine balanced vs. disturbed
-    const tiltDeg = Math.abs(beamAngle * 180 / Math.PI);
-    const isLevel = tiltDeg < LEVEL_THRESHOLD;
-
-    // Color for structural elements: slight tint toward oxblood when disturbed,
-    // toward pine when settled — but always mostly ink.
-    const structColor = 'rgba(' + INK_RGB + ',' + ALPHA_STRUCT + ')';
-
-    ctx.lineCap  = 'round';
-    ctx.lineJoin = 'round';
-
-    // ── Base and post ──
-
-    ctx.strokeStyle = structColor;
-
-    // Base bar (horizontal footing)
-    const baseThick = Math.max(3, rig.rigH * 0.018);
-    ctx.lineWidth = baseThick;
-    ctx.beginPath();
-    ctx.moveTo(cx - baseHalfW, baseY);
-    ctx.lineTo(cx + baseHalfW, baseY);
-    ctx.stroke();
-
-    // Center foot (small vertical stub below base for stability look)
-    ctx.lineWidth = baseThick * 0.7;
-    ctx.beginPath();
-    ctx.moveTo(cx, baseY);
-    ctx.lineTo(cx, baseY + baseThick * 1.2);
-    ctx.stroke();
-
-    // Vertical post
-    const postLineW = Math.max(2, rig.rigH * 0.012);
-    ctx.lineWidth = postLineW;
-    ctx.beginPath();
-    ctx.moveTo(cx, baseY);
-    ctx.lineTo(cx, pivotY);
-    ctx.stroke();
-
-    // ── Pivot marker: bold dot ──
-
-    ctx.fillStyle = structColor;
-    const pivotR = Math.max(4, rig.rigH * 0.025);
-    ctx.beginPath();
-    ctx.arc(cx, pivotY, pivotR, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ── Beam ──
-
-    // Beam endpoints (rotated about pivot)
-    const cosA = Math.cos(beamAngle);
-    const sinA = Math.sin(beamAngle);
-
-    const lx = cx - beamHalf * cosA;
-    const ly = pivotY - beamHalf * sinA;  // left end (negative x offset)
-    const rx = cx + beamHalf * cosA;
-    const ry = pivotY + beamHalf * sinA;  // right end (positive x offset)
-    // Note: +angle means right side goes DOWN (sinA positive → ry > pivotY)
-
-    const beamThick = Math.max(3, rig.rigH * 0.016);
-    ctx.strokeStyle = structColor;
-    ctx.lineWidth   = beamThick;
-    ctx.beginPath();
-    ctx.moveTo(lx, ly);
-    ctx.lineTo(rx, ry);
-    ctx.stroke();
-
-    // ── Chains and pans ──
-
-    // Chains hang straight down from each beam end (gravity, not rotated with beam).
-    // Left pan
-    drawChainAndPan(lx, ly, chainLen, panHalfW, panDepth, structColor,
-                    'DEBIT', labelSize, amtSize, 'left');
-    // Right pan
-    drawChainAndPan(rx, ry, chainLen, panHalfW, panDepth, structColor,
-                    'CREDIT', labelSize, amtSize, 'right');
-
-    // ── Balance indicator near pivot ──
-
-    const indText  = isLevel ? '=' : '≠';
-    const indRGB   = isLevel ? PINE_RGB : OXBLOOD_RGB;
-    const indColor = 'rgba(' + indRGB + ',' + ALPHA_INDICATOR + ')';
-
-    ctx.fillStyle    = indColor;
-    ctx.font         = 'bold ' + indSize + 'px ' + FONT_MONO;
+    ctx.font         = FONT_SIZE + 'px ' + FONT_MONO;
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(indText, cx, pivotY - pivotR - indSize * 0.9);
-  }
 
-  /**
-   * Draw chain (two converging lines from beam endpoint down to pan top)
-   * then a shallow pan bowl, label, and amount.
-   *
-   * chainTopX/Y: where the chain meets the beam end.
-   * Pans hang vertically (straight down) regardless of beam angle.
-   */
-  function drawChainAndPan(chainTopX, chainTopY, chainLen, panHalfW, panDepth,
-                            strokeColor, label, labelSize, amtSize, side) {
-    const panTopY = chainTopY + chainLen;
-    const panBotY = panTopY + panDepth;
+    for (let r = 0; r < rows; r++) {
+      const baseCY = r * CELL_H + CELL_H * 0.5;
 
-    ctx.strokeStyle = strokeColor;
+      for (let c = 0; c < cols; c++) {
+        const baseCX = c * CELL_W + CELL_W * 0.5;
+        const idx    = r * cols + c;
+        const agit   = agitation ? agitation[idx] : 0;
 
-    // Chain: two lines converging from a wide spread at the beam end
-    // to the pan corners — classic "V" bale shape.
-    const spreadX = panHalfW * 0.45; // spread at beam end attachment
-    const chainW  = Math.max(1.5, rig.rigH * 0.009);
+        // ── Parting bubble: fade toward 0 inside INNER_R ──
+        let distToCursor = Infinity;
+        if (cursorX !== null && cursorY !== null) {
+          const dx = baseCX - cursorX;
+          const dy = baseCY - cursorY;
+          distToCursor = Math.sqrt(dx * dx + dy * dy);
+        }
 
-    ctx.lineWidth = chainW;
-    ctx.beginPath();
-    // Left chain strand
-    ctx.moveTo(chainTopX - spreadX, chainTopY);
-    ctx.lineTo(chainTopX - panHalfW, panTopY);
-    ctx.stroke();
+        // Inner fade: smooth falloff from 0 (right at cursor) to 1 (at INNER_R+)
+        let innerFade = 1;
+        if (distToCursor < INNER_R) {
+          innerFade = distToCursor / INNER_R;
+          innerFade = innerFade * innerFade; // quadratic — sharper hole
+        }
 
-    ctx.beginPath();
-    // Right chain strand
-    ctx.moveTo(chainTopX + spreadX, chainTopY);
-    ctx.lineTo(chainTopX + panHalfW, panTopY);
-    ctx.stroke();
+        // ── Alpha: rest → wake brightness ──
+        const alpha = (ALPHA_REST + agit * (ALPHA_WAKE - ALPHA_REST)) * innerFade;
+        if (alpha < 0.005) continue; // skip invisible cells (perf)
 
-    // Pan bowl: arc from left corner through bottom center to right corner
-    const panThick = Math.max(2.5, rig.rigH * 0.014);
-    ctx.lineWidth  = panThick;
-    ctx.beginPath();
-    ctx.moveTo(chainTopX - panHalfW, panTopY);
-    ctx.quadraticCurveTo(chainTopX, panBotY + panDepth * 0.6, chainTopX + panHalfW, panTopY);
-    ctx.stroke();
+        // ── Pine tint: blend ink → pine as agitation rises ──
+        const r_ch = Math.round(INK_R + agit * (PINE_R - INK_R));
+        const g_ch = Math.round(INK_G + agit * (PINE_G - INK_G));
+        const b_ch = Math.round(INK_B + agit * (PINE_B - INK_B));
 
-    // Horizontal top rail of pan (the rim)
-    ctx.lineWidth = panThick * 0.7;
-    ctx.beginPath();
-    ctx.moveTo(chainTopX - panHalfW, panTopY);
-    ctx.lineTo(chainTopX + panHalfW, panTopY);
-    ctx.stroke();
+        ctx.fillStyle = 'rgba(' + r_ch + ',' + g_ch + ',' + b_ch + ',' + alpha.toFixed(3) + ')';
 
-    // Label (DEBIT / CREDIT) — above the pan rim
-    const labelY    = panTopY - labelSize * 1.0;
-    const labelColor = 'rgba(' + INK_RGB + ',' + ALPHA_LABEL + ')';
-    ctx.fillStyle    = labelColor;
-    ctx.font         = 'bold ' + labelSize + 'px ' + FONT_MONO;
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(label, chainTopX, labelY);
+        // ── Subtle displacement: push cell outward from cursor ──
+        let drawX = baseCX;
+        let drawY = baseCY;
+        if (cursorX !== null && distToCursor < OUTER_R && distToCursor > 0.1) {
+          const push = agit * MAX_PUSH * (1 - distToCursor / OUTER_R);
+          const nx   = (baseCX - cursorX) / distToCursor;
+          const ny   = (baseCY - cursorY) / distToCursor;
+          drawX = baseCX + nx * push;
+          drawY = baseCY + ny * push;
+        }
 
-    // Amount — inside/below pan (sits in the bowl visually)
-    const amtY    = panBotY + panDepth * 0.9 + amtSize * 1.1;
-    const amtColor = 'rgba(' + INK_RGB + ',' + ALPHA_AMOUNT + ')';
-    ctx.fillStyle  = amtColor;
-    ctx.font       = amtSize + 'px ' + FONT_MONO;
-    ctx.textAlign  = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(AMOUNT_TEXT, chainTopX, amtY);
+        // ── Glyph ──
+        const glyph = reducedMotion
+          ? glyphAt(c, r, 0, 0)   // static snapshot at t=0 for reduced-motion
+          : glyphAt(c, r, t, agit);
+
+        ctx.fillText(glyph, drawX, drawY);
+      }
+    }
   }
 
   // ── Animation loop ────────────────────────────────────────────────────────────
 
   function tick(now) {
-    raf = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
 
     if (lastTime === null) { lastTime = now; }
     const dt = Math.min((now - lastTime) * 0.001, 0.05); // cap at 50 ms
     lastTime = now;
 
-    const t = now * 0.001; // seconds since page load
+    const t = now * 0.001;
 
-    targetAngle = computeTargetAngle(t);
-    stepSpring(dt);
-
-    drawScale(angle, t);
+    updateAgitation(dt);
+    drawFrame(t, dt);
   }
 })();
