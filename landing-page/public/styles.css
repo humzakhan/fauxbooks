@@ -13,6 +13,10 @@
   --hairline: #E6E2D8;
   --accent:   #8C2F2A;   /* oxblood — credits / "in the red" */
   --pine:     #1E6F44;   /* forest green — debits / "in the black" */
+
+  /* Column layout — one source of truth */
+  --col-max:  680px;
+  --col-pad:  clamp(24px, 5vw, 56px);
 }
 
 /* ---------------------------------------------------------
@@ -63,10 +67,13 @@ body {
   width: 100%;
 }
 
+/* All bands share one column width and one horizontal padding.
+   Vertical padding is added per-band below. */
 .band > .wrap {
-  max-width: 680px;
+  max-width: var(--col-max);
   margin: 0 auto;
-  padding: 0 clamp(24px, 5vw, 56px);
+  padding-left:  var(--col-pad);
+  padding-right: var(--col-pad);
 }
 
 /* Background modifiers */
@@ -111,6 +118,162 @@ body {
 .footer-band > .wrap {
   padding-top: 48px;
   padding-bottom: 48px;
+}
+
+/* ---------------------------------------------------------
+   Solid-band textures — features-band (ink)
+   --------------------------------------------------------- */
+.features-band {
+  overflow: hidden;   /* clip pseudo-elements */
+}
+
+/* ::before — dot-grid pattern + subtle depth gradient */
+.features-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(250,248,243,0.05) 1px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(250,248,243,0.04) 0%, transparent 40%, rgba(0,0,0,0.06) 100%);
+  background-size: 22px 22px, 100% 100%;
+  background-position: 0 0, 0 0;
+}
+
+/* ::after — large faint ledger watermark glyph, anchored bottom-right */
+.features-band::after {
+  content: "Σ";
+  position: absolute;
+  bottom: -0.1em;
+  right: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: clamp(8rem, 22vw, 16rem);
+  line-height: 1;
+  color: rgba(250,248,243,0.04);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Slow dot-grid drift for users who have no reduced-motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  .features-band::before {
+    animation: dot-drift-dark 60s linear infinite;
+  }
+}
+
+@keyframes dot-drift-dark {
+  from { background-position: 0 0,    0 0; }
+  to   { background-position: 22px 22px, 0 0; }
+}
+
+/* Ensure content sits above pseudo-elements */
+.features-band > .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------
+   Solid-band textures — cta-band (pine)
+   --------------------------------------------------------- */
+.cta-band {
+  overflow: hidden;
+}
+
+.cta-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 45%, rgba(0,0,0,0.07) 100%);
+  background-size: 22px 22px, 100% 100%;
+  background-position: 0 0, 0 0;
+}
+
+/* Watermark: "= credits" anchored bottom-left of the column */
+.cta-band::after {
+  content: "= credits";
+  position: absolute;
+  bottom: -0.1em;
+  left: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: clamp(4rem, 12vw, 9rem);
+  line-height: 1;
+  color: rgba(255,255,255,0.06);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cta-band::before {
+    animation: dot-drift-pine 60s linear infinite;
+  }
+}
+
+@keyframes dot-drift-pine {
+  from { background-position: 0 0,    0 0; }
+  to   { background-position: 22px 22px, 0 0; }
+}
+
+.cta-band > .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------
+   Solid-band textures — footer-band (ink)
+   --------------------------------------------------------- */
+.footer-band {
+  overflow: hidden;
+}
+
+.footer-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(250,248,243,0.05) 1px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(250,248,243,0.02) 100%);
+  background-size: 22px 22px, 100% 100%;
+  background-position: 0 0, 0 0;
+}
+
+/* Watermark: "debits =" anchored top-right, very faint */
+.footer-band::after {
+  content: "debits =";
+  position: absolute;
+  top: -0.15em;
+  right: max(calc(50% - var(--col-max)/2 - 1rem), 1rem);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 1;
+  color: rgba(250,248,243,0.04);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .footer-band::before {
+    animation: dot-drift-dark 60s linear infinite;
+  }
+}
+
+.footer-band > .wrap {
+  position: relative;
+  z-index: 1;
 }
 
 /* ---------------------------------------------------------
@@ -184,11 +347,12 @@ body {
   }
 }
 
+/* [3] LEGIBILITY — subhead: was --muted (#6B6862), now clearly readable on paper */
 .subhead {
   font-family: 'Inter', sans-serif;
   font-size: 1.05rem;
   line-height: 1.55;
-  color: var(--muted);
+  color: rgba(26, 26, 24, 0.80);
   max-width: 46ch;
   margin-top: 1.25rem;
 }
@@ -505,10 +669,11 @@ body {
   color: var(--pine);
 }
 
+/* [3] LEGIBILITY — feature paragraph: was rgba(250,248,243,0.62), now 0.82 */
 .features-band .feature p {
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
-  color: rgba(250, 248, 243, 0.62);
+  color: rgba(250, 248, 243, 0.82);
   line-height: 1.5;
 }
 
@@ -535,10 +700,11 @@ body {
   margin-bottom: 0.6rem;
 }
 
+/* [3] LEGIBILITY — lede: was --muted (#6B6862), now rgba(26,26,24,0.72) */
 .lede {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
-  color: var(--muted);
+  color: rgba(26, 26, 24, 0.72);
   max-width: 52ch;
   line-height: 1.55;
   margin-bottom: 0.25rem;
@@ -590,7 +756,7 @@ body {
   padding: 0;
 }
 
-/* GL column colouring — debit / credit */
+/* GL column colouring — debit / credit (unchanged) */
 .dr { color: var(--pine); }
 .cr { color: var(--accent); }
 
@@ -620,11 +786,11 @@ body {
   opacity: 1;
 }
 
-/* Caption */
+/* [3] LEGIBILITY — caption: was --muted (#6B6862), now rgba(26,26,24,0.72) */
 .caption {
   font-family: 'Inter', sans-serif;
   font-size: 0.8rem;
-  color: var(--muted);
+  color: rgba(26, 26, 24, 0.72);
   margin-top: 0.5rem;
   line-height: 1.5;
 }
@@ -695,6 +861,7 @@ body {
   margin-bottom: 1.25rem;
 }
 
+/* [3] LEGIBILITY — cta-install: already 0.92 — confirmed, no change needed */
 .cta-install {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.9rem;
@@ -756,8 +923,10 @@ body {
 /* ---------------------------------------------------------
    Footer band — ink background
    --------------------------------------------------------- */
+/* [3] LEGIBILITY — footer: was rgba(250,248,243,0.6), now 0.70 */
 .footer-band {
-  color: rgba(250, 248, 243, 0.6);
+  color: rgba(250, 248, 243, 0.70);
+  text-align: left;  /* explicit left-align to match column spine */
 }
 
 .footer {
@@ -766,6 +935,7 @@ body {
   line-height: 1.5;
 }
 
+/* [3] LEGIBILITY — footer links: clearly paper-colored */
 .footer-band a {
   color: var(--paper);
   text-decoration: none;

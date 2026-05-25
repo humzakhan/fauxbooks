@@ -28,7 +28,7 @@
   const BASE_R     = 0.55;  /* minimum dot radius, logical px */
   const AMP        = 2.0;   /* wave swell amplitude */
   const MAX_R      = 2.8;   /* hard cap on dot radius */
-  const BASE_ALPHA = 0.12;  /* base dot/glyph alpha (reduced; resting ~0.10-0.13) */
+  const BASE_ALPHA = 0.11;  /* base dot/glyph alpha (quiet resting level) */
 
   /* ── wave field ─────────────────────────────────────────────────── */
   /* two slow crossing sine fields */
@@ -37,16 +37,16 @@
 
   /* ── global breathing pulse ─────────────────────────────────────── */
   /* slow sine that modulates ALL dots together — the whole field breathes */
-  const PULSE_PERIOD = 4.2;   /* seconds per full breath cycle */
-  const PULSE_ALPHA  = 0.03;  /* alpha swing ±0.03 from global pulse */
-  const PULSE_R      = 0.35;  /* radius swing ±0.35 from global pulse */
+  const PULSE_PERIOD = 4.5;   /* seconds per full breath cycle */
+  const PULSE_ALPHA  = 0.07;  /* alpha swing ±0.07 from global pulse (visibly breathes) */
+  const PULSE_R      = 1.0;   /* radius swing ±1.0 from global pulse (dots noticeably grow/shrink) */
 
   /* ── cursor ripple ──────────────────────────────────────────────── */
-  const RIPPLE_K          = 0.22;   /* spatial frequency of ring */
+  const RIPPLE_K          = 0.07;    /* spatial frequency of ring (logical px⁻¹; wavelength ~90px) */
   const RIPPLE_SPD        = 3.8;    /* ring travel speed */
-  const RIPPLE_AMP        = 2.6;    /* max extra radius (raised slightly to pop vs fainter base) */
-  const RIPPLE_FALLOFF    = 0.0025; /* gaussian falloff per px² */
-  const RIPPLE_NEAR       = 55;     /* px inside which pine tint applies */
+  const RIPPLE_AMP        = 3.0;    /* max extra radius (logical px; clearly swells near dots) */
+  const RIPPLE_FALLOFF    = 0.00004; /* gaussian falloff per logical px² (~half-strength at 120px) */
+  const RIPPLE_NEAR       = 90;     /* logical px inside which pine tint applies */
   const RIPPLE_DECAY      = 1.8;    /* ripple amplitude decay /s when cursor stops */
   const RIPPLE_ALPHA_BOOST = 0.12;  /* extra alpha boost near cursor */
 
@@ -214,17 +214,19 @@
       let pine      = 0;
       let nearBoost = 0;
       if (rippleAmp > 0.001) {
-        const dx   = px - cx0;
-        const dy   = py - cy0;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dx    = px - cx0;
+        const dy    = py - cy0;
+        const dist  = Math.sqrt(dx * dx + dy * dy);
+        /* convert to logical px so constants are DPR-independent */
+        const distL = dist / DPR;
 
-        const ring     = Math.sin(dist * RIPPLE_K - rippleAge);
-        const gaussian = Math.exp(-dist * dist * RIPPLE_FALLOFF);
+        const ring     = Math.sin(distL * RIPPLE_K - rippleAge);
+        const gaussian = Math.exp(-distL * distL * RIPPLE_FALLOFF);
         const extra    = RIPPLE_AMP * ring * gaussian * rippleAmp;
         r += extra;
 
-        if (dist < RIPPLE_NEAR * DPR) {
-          const nearFrac = Math.max(0, 1 - dist / (RIPPLE_NEAR * DPR));
+        if (distL < RIPPLE_NEAR) {
+          const nearFrac = Math.max(0, 1 - distL / RIPPLE_NEAR);
           pine      = nearFrac * rippleAmp;
           nearBoost = RIPPLE_ALPHA_BOOST * nearFrac * rippleAmp;
         }
