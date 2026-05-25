@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>fauxbooks — synthetic accounting data that already reconciles</title>
+    <meta name="description" content="fauxbooks is a deterministic Go CLI that generates synthetic, reconcilable accounting datasets. Same seed in, byte-identical books out — balanced by construction.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./ascii-bg.js" defer></script>
+  </head>
+  <body>
+    <canvas id="ascii-bg" aria-hidden="true"></canvas>
+    <main class="page">
+      <header class="masthead">
+        <span class="wordmark">fauxbooks</span>
+        <a class="gh-link" href="https://github.com/humzakhan/fauxbooks">github ↗</a>
+      </header>
+
+      <section class="hero">
+        <h1 class="headline">Synthetic accounting data<br>that already reconciles.</h1>
+        <p class="subhead">A deterministic Go CLI. Same seed in, byte-identical books out — balanced by construction, not by a pass.</p>
+        <div class="command"><span class="prompt">$</span> <span class="cmd">fbx gen monthly-close --seed 1 --out ./books</span></div>
+        <p class="install">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</p>
+      </section>
+
+      <hr class="rule">
+
+      <section class="features">
+        <div class="feature"><h3>deterministic</h3><p>same seed → same bytes, every OS</p></div>
+        <div class="feature"><h3>reconcilable</h3><p>Σ debits = Σ credits, every run</p></div>
+        <div class="feature"><h3>single binary</h3><p>no CGo, no deps · csv · jsonl · xlsx</p></div>
+      </section>
+
+      <hr class="rule rule--heavy">
+
+      <section class="examples">
+        <h2 class="section-title">Examples</h2>
+        <p class="lede">One run writes a complete double-entry close — 19 CSVs and a manifest.</p>
+
+        <div class="example">
+          <div class="example__label">What it looks like <span class="filename">gl.csv</span></div>
+          <pre class="data-table"><code>entry_id      account   debit             credit
+JE-00000001   5000      5910.100000000    0.000000000
+<span class="balance">JE-00000001   1300      0.000000000       5910.100000000</span></code></pre>
+          <p class="caption">Decimals as exact strings, 9 fractional digits. No floats, ever. Every entry: Σ debits = Σ credits.</p>
+        </div>
+
+        <div class="example">
+          <div class="example__label">What's in the folder <span class="filename">./books/</span></div>
+          <dl class="filelist">
+            <dt>ledger</dt><dd>coa · journal_entries · gl · bank_statement</dd>
+            <dt>masters</dt><dd>customers · vendors</dd>
+            <dt>sub-ledgers</dt><dd>invoices · customer_payments · bills · bill_payments · expense_reports</dd>
+            <dt>statements</dt><dd>profit-loss · balance-sheet · cash-flow · trial-balance</dd>
+            <dt>reports</dt><dd>ar-aging · ap-aging · customer-statements · check-register</dd>
+            <dt>metadata</dt><dd>manifest.json <span class="muted">(seeds, row counts, SHA-256 per file)</span></dd>
+          </dl>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <footer class="footer">fauxbooks · MIT · <a href="https://github.com/humzakhan/fauxbooks">github.com/humzakhan/fauxbooks</a></footer>
+    </main>
+  </body>
+</html>

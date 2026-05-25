@@ -1,0 +1,6 @@
+# Static Cloudflare Pages project for fauxbooks-landing.
+# `npm run deploy` requires `wrangler login` and a Cloudflare account.
+
+name = "fauxbooks-landing"
+pages_build_output_dir = "public"
+compatibility_date = "2025-05-01"

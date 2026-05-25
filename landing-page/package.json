@@ -1,0 +1,14 @@
+{
+  "name": "fauxbooks-landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public --port 8788",
+    "serve": "npx --yes serve public",
+    "deploy": "wrangler pages deploy public --project-name fauxbooks-landing"
+  },
+  "devDependencies": {
+    "wrangler": "^4.73.0"
+  }
+}

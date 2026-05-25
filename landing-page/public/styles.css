@@ -1,0 +1,371 @@
+/* =========================================================
+   fauxbooks — Ledger design language
+   Paper not screen. Ink not UI. One pen-stroke of accent.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Tokens
+   --------------------------------------------------------- */
+:root {
+  --paper:    #FAF8F3;
+  --ink:      #1A1A18;
+  --muted:    #6B6862;
+  --hairline: #E6E2D8;
+  --accent:   #8C2F2A;   /* oxblood — .gh-link, .prompt, .balance only */
+}
+
+/* ---------------------------------------------------------
+   Reset & base
+   --------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   Background canvas — sits behind everything
+   --------------------------------------------------------- */
+#ascii-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* ---------------------------------------------------------
+   Page container
+   --------------------------------------------------------- */
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 64px clamp(24px, 5vw, 56px);
+}
+
+/* ---------------------------------------------------------
+   Masthead
+   --------------------------------------------------------- */
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: clamp(64px, 12vh, 96px);
+}
+
+.wordmark {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.gh-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.gh-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------
+   Hero
+   --------------------------------------------------------- */
+.hero {
+  /* stacks naturally */
+}
+
+.headline {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.subhead {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 46ch;
+  margin-top: 1.25rem;
+}
+
+/* Command block */
+.command {
+  display: block;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin: 2rem 0 0.75rem;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.prompt {
+  color: var(--accent);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cmd {
+  color: var(--ink);
+}
+
+/* Install line */
+.install {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------
+   Rules
+   --------------------------------------------------------- */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 3rem 0;
+}
+
+.rule--heavy {
+  border-top: 2px solid var(--ink);
+}
+
+/* ---------------------------------------------------------
+   Features
+   --------------------------------------------------------- */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 2.5rem;
+}
+
+.feature h3 {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+.feature p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .features {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   Examples section
+   --------------------------------------------------------- */
+.examples {
+  /* stacks naturally */
+}
+
+.section-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+
+.lede {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 52ch;
+  line-height: 1.55;
+  margin-bottom: 0.25rem;
+}
+
+/* Individual example block */
+.example {
+  margin: 2rem 0;
+}
+
+.example__label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.filename {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* Data table — monospace pre block */
+.data-table {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.data-table code {
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* Oxblood accent — balance row only */
+.balance {
+  color: var(--accent);
+}
+
+/* Caption */
+.caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------
+   Filelist — definition list
+   --------------------------------------------------------- */
+.filelist {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  row-gap: 0.6rem;
+  column-gap: 1.5rem;
+  list-style: none;
+  margin-top: 0.75rem;
+}
+
+.filelist dt {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink);
+  align-self: baseline;
+  padding-top: 0.05em;
+}
+
+.filelist dd {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  align-self: baseline;
+  line-height: 1.5;
+}
+
+.filelist .muted {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+  .filelist {
+    grid-template-columns: 1fr;
+    row-gap: 0.25rem;
+  }
+
+  .filelist dt {
+    margin-top: 0.75rem;
+    color: var(--ink);
+  }
+
+  .filelist dt:first-child {
+    margin-top: 0;
+  }
+}
+
+/* ---------------------------------------------------------
+   Footer
+   --------------------------------------------------------- */
+.footer {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: clamp(48px, 8vh, 80px);
+  line-height: 1.5;
+}
+
+.footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------
+   Responsive — small screens
+   --------------------------------------------------------- */
+@media (max-width: 480px) {
+  .page {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .masthead {
+    margin-bottom: clamp(40px, 10vh, 64px);
+  }
+
+  .command {
+    font-size: 0.78rem;
+  }
+}
