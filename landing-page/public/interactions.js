@@ -3,6 +3,7 @@
  *
  * A) Copy-to-clipboard for button.copy-btn
  * B) Balance count-up animation for .bal-num[data-target]
+ * C) Animated hero terminal (#hero-terminal)
  *
  * Vanilla JS, no libraries, no build step. Loaded with defer.
  * All selectors are guarded — missing elements are silently skipped.
@@ -24,6 +25,7 @@
   function setup() {
     initCopyButtons();
     initBalanceCountUp();
+    initHeroTerminal();
   }
 
   // ── A) Copy-to-clipboard ─────────────────────────────────────────────────────
@@ -188,4 +190,181 @@
     parts[0]  = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return parts.join('.');
   }
+
+  // ── C) Hero terminal animation ───────────────────────────────────────────────
+
+  /**
+   * Drives the animated terminal in #hero-terminal.
+   * Types the gen command char-by-char, then reveals output lines one at a time,
+   * holds, clears, and loops. Click on the terminal restarts the sequence.
+   * prefers-reduced-motion: renders final state statically, no timers.
+   */
+  function initHeroTerminal() {
+    var wrap    = document.getElementById('hero-terminal');
+    var typed   = document.getElementById('term-typed');
+    var caret   = document.getElementById('term-caret');
+    var out     = document.getElementById('term-out');
+
+    // Guard: if any element is missing, do nothing
+    if (!wrap || !typed || !caret || !out) return;
+
+    var COMMAND = 'fbx gen monthly-close --seed 1 --out ./books';
+    var CHAR_MS  = 48;   // ms per character while typing
+    var LINE_MS  = 200;  // ms between output lines appearing
+    var HOLD_MS  = 2600; // hold before clearing and looping
+    var CLEAR_MS = 340;  // fade-to-clear duration
+
+    // Output line descriptors: [cssClass, tickChar|null, filenameText, extraText]
+    // Each object: { cls: String, tick: Boolean, text: String }
+    var OUTPUT_LINES = [
+      { cls: 'terminal__line--ok',       tick: true,  text: 'gl.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: 'journal_entries.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: 'coa.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: 'trial-balance.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: 'balance-sheet.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: 'profit-loss.csv' },
+      { cls: 'terminal__line--ok',       tick: true,  text: '… +13 more' },
+      { cls: 'terminal__line--spacer',   tick: false, text: '' },
+      { cls: 'terminal__line--sum',      tick: false, text: 'Σ debits = Σ credits' },
+      { cls: 'terminal__line--balanced', tick: true,  text: 'balanced · 19 files · seed 1 · 2026-01' },
+    ];
+
+    var timers = [];
+
+    function schedule(ms, fn) {
+      var id = setTimeout(fn, ms);
+      timers.push(id);
+      return id;
+    }
+
+    function clearTimers() {
+      for (var i = 0; i < timers.length; i++) {
+        clearTimeout(timers[i]);
+      }
+      timers = [];
+    }
+
+    /**
+     * Build a single output line element.
+     * Uses DOM APIs — no innerHTML on variable content.
+     */
+    function buildLine(descriptor) {
+      var el = document.createElement('span');
+      el.className = 'terminal__line ' + descriptor.cls;
+
+      if (descriptor.cls === 'terminal__line--spacer') {
+        // spacer: already visible, just height
+        el.classList.add('visible');
+        return el;
+      }
+
+      if (descriptor.tick) {
+        var tickSpan = document.createElement('span');
+        tickSpan.className = 'tick';
+        tickSpan.textContent = '✓ ';
+        el.appendChild(tickSpan);
+      }
+
+      var textNode = document.createTextNode(descriptor.text);
+      el.appendChild(textNode);
+
+      return el;
+    }
+
+    /**
+     * Render the fully-completed terminal state without any animation.
+     * Used for prefers-reduced-motion.
+     */
+    function renderStatic() {
+      typed.textContent = COMMAND;
+      // caret hidden by CSS under reduced-motion
+
+      out.innerHTML = '';
+      for (var i = 0; i < OUTPUT_LINES.length; i++) {
+        var el = buildLine(OUTPUT_LINES[i]);
+        el.classList.add('visible');
+        out.appendChild(el);
+      }
+    }
+
+    /**
+     * Run the full animated sequence, then loop.
+     */
+    function runSequence() {
+      clearTimers();
+
+      // Reset state
+      typed.textContent = '';
+      out.innerHTML = '';
+      // Restore caret display (may have been hidden during fade)
+      wrap.style.transition = '';
+      wrap.style.opacity    = '';
+      caret.style.display   = '';
+
+      // 1. Type the command character by character
+      var charIdx = 0;
+      function typeNext() {
+        if (charIdx < COMMAND.length) {
+          typed.textContent += COMMAND[charIdx];
+          charIdx++;
+          schedule(CHAR_MS, typeNext);
+        } else {
+          // Typing done — pause, then reveal output lines
+          schedule(320, showOutputLines);
+        }
+      }
+      schedule(CHAR_MS, typeNext);
+
+      // 2. Pre-build output line elements (hidden until revealed)
+      var lineEls = [];
+      for (var i = 0; i < OUTPUT_LINES.length; i++) {
+        var lineEl = buildLine(OUTPUT_LINES[i]);
+        out.appendChild(lineEl);
+        lineEls.push(lineEl);
+      }
+
+      function showOutputLines() {
+        // Stop caret blinking once output starts
+        caret.style.opacity = '0';
+
+        for (var j = 0; j < lineEls.length; j++) {
+          (function (el, idx) {
+            schedule(idx * LINE_MS, function () {
+              el.classList.add('visible');
+            });
+          })(lineEls[j], j);
+        }
+
+        // 3. After all lines revealed, hold, then fade and loop
+        var totalReveal = lineEls.length * LINE_MS;
+        schedule(totalReveal + HOLD_MS, clearAndLoop);
+      }
+
+      function clearAndLoop() {
+        wrap.style.transition = 'opacity ' + CLEAR_MS + 'ms ease';
+        wrap.style.opacity    = '0';
+        schedule(CLEAR_MS, function () {
+          wrap.style.transition = '';
+          wrap.style.opacity    = '';
+          caret.style.opacity   = '';
+          runSequence();
+        });
+      }
+    }
+
+    // Restart sequence on click (only when animated)
+    if (!reducedMotion) {
+      wrap.addEventListener('click', function () {
+        runSequence();
+      });
+    }
+
+    // Init
+    if (reducedMotion) {
+      renderStatic();
+    } else {
+      runSequence();
+    }
+  }
+
 })();

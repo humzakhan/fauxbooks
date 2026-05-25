@@ -14,30 +14,38 @@
   </head>
   <body>
     <canvas id="ascii-bg" aria-hidden="true"></canvas>
-    <main class="page">
-      <header class="masthead">
+
+    <header class="band band--paper top-band">
+      <div class="wrap masthead">
         <span class="wordmark">fauxbooks</span>
         <a class="gh-link" href="https://github.com/humzakhan/fauxbooks">github ↗</a>
-      </header>
+      </div>
+    </header>
 
-      <section class="hero">
+    <section class="band band--paper hero-band">
+      <div class="wrap hero">
         <h1 class="headline">Synthetic accounting data<br>that already <span class="hl-reconciles">reconciles</span>.</h1>
         <p class="subhead">A deterministic Go CLI. Same seed in, byte-identical books out — balanced by construction, not by a pass.</p>
-        <div class="command"><span class="command-line"><span class="prompt">$</span> <span class="cmd" id="cmd-text">fbx gen monthly-close --seed 1 --out ./books</span></span><button class="copy-btn" type="button" data-copy="cmd-text" aria-label="Copy command">copy</button></div>
-        <p class="install">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</p>
-      </section>
+        <div class="terminal" id="hero-terminal" role="region" aria-label="live terminal demo" title="click to replay">
+          <div class="terminal__bar" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="terminal__body">
+            <div class="terminal__cmdline"><span class="terminal__prompt">$</span> <span class="terminal__typed" id="term-typed"></span><span class="terminal__caret" id="term-caret"></span></div>
+            <div class="terminal__out" id="term-out"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <hr class="rule">
-
-      <section class="features">
+    <section class="band band--ink features-band">
+      <div class="wrap features">
         <div class="feature"><h3>deterministic</h3><p>same seed → same bytes, every OS</p></div>
         <div class="feature"><h3>reconcilable</h3><p>Σ debits = Σ credits, every run</p></div>
         <div class="feature"><h3>single binary</h3><p>no CGo, no deps · csv · jsonl · xlsx</p></div>
-      </section>
+      </div>
+    </section>
 
-      <hr class="rule rule--heavy">
-
-      <section class="examples">
+    <section class="band band--paper examples-band">
+      <div class="wrap examples">
         <h2 class="section-title">Examples</h2>
         <p class="lede">One run writes a complete double-entry close — 19 CSVs and a manifest.</p>
 
@@ -61,11 +69,22 @@ JE-00000001   1300      <span class="dr">0.000000000</span>       <span class="c
             <dt>metadata</dt><dd>manifest.json <span class="muted">(seeds, row counts, SHA-256 per file)</span></dd>
           </dl>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <hr class="rule">
+    <section class="band band--pine cta-band">
+      <div class="wrap cta">
+        <h2 class="cta-title">Reconcilable books in one command.</h2>
+        <p class="cta-install"><span class="cta-prompt">$</span> <span id="install-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span> <button class="copy-btn copy-btn--onpine" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button></p>
+        <div class="cta-actions">
+          <a class="btn btn--solid" href="https://github.com/humzakhan/fauxbooks">Get started →</a>
+          <a class="btn btn--ghost" href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">Read the docs ↗</a>
+        </div>
+      </div>
+    </section>
 
-      <footer class="footer">fauxbooks · MIT · <a href="https://github.com/humzakhan/fauxbooks">github.com/humzakhan/fauxbooks</a></footer>
-    </main>
+    <footer class="band band--ink footer-band">
+      <div class="wrap footer">fauxbooks · MIT · <a href="https://github.com/humzakhan/fauxbooks">github.com/humzakhan/fauxbooks</a></div>
+    </footer>
   </body>
 </html>
