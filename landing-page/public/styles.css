@@ -181,13 +181,25 @@ body {
 }
 
 .gh-arrow {
-  font-size: 0.9em;
-  opacity: 0.65;
+  width: 12px;
+  height: 12px;
+  opacity: 0.75;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .gh-link:hover .gh-arrow {
   opacity: 1;
+  transform: translate(1px, -1px);
+}
+
+/* Diagonal external-link arrow (ghost button) */
+.ext-arrow {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.15s ease;
+}
+
+.btn--ghost:hover .ext-arrow {
   transform: translate(1px, -1px);
 }
 
