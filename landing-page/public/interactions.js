@@ -396,7 +396,9 @@
         cols: [{ l: 'entry_id' }, { l: 'account' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
         rows: [
           ['JE-00000001', '5000', '5910.100000000', '0.000000000'],
-          ['JE-00000001', '1200', '0.000000000', '5910.100000000']
+          ['JE-00000001', '1200', '0.000000000', '5910.100000000'],
+          ['JE-00000002', '1010', '3477.180000000', '0.000000000'],
+          ['JE-00000002', '1100', '0.000000000', '3477.180000000']
         ],
         note: 'Each journal entry’s lines — debits and credits net to zero by construction.'
       },
@@ -404,7 +406,9 @@
         cols: [{ l: 'entry_id' }, { l: 'description' }, { l: 'source_event_id' }],
         rows: [
           ['JE-00000001', 'Inventory COGS', 'evt-000001'],
-          ['JE-00000002', 'Customer payment', 'evt-000002']
+          ['JE-00000002', 'Customer payment', 'evt-000002'],
+          ['JE-00000003', 'Vendor bill', 'evt-000003'],
+          ['JE-00000004', 'Sale invoice', 'evt-000004']
         ],
         note: 'One header row per business event; gl.csv holds its balanced lines.'
       },
@@ -412,7 +416,9 @@
         cols: [{ l: 'code' }, { l: 'name' }, { l: 'type' }, { l: 'normal_balance' }],
         rows: [
           ['1000', 'Cash and Cash Equivalents', 'asset', 'debit'],
-          ['1010', 'Checking Account', 'asset', 'debit']
+          ['1010', 'Checking Account', 'asset', 'debit'],
+          ['1020', 'Savings Account', 'asset', 'debit'],
+          ['1030', 'Petty Cash', 'asset', 'debit']
         ],
         note: 'Chart of accounts — every account code in the books resolves here.'
       },
@@ -421,7 +427,9 @@
         cols: [{ l: 'entry_id' }, { l: 'account' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
         rows: [
           ['JE-00000002', '1010', '3477.180000000', '0.000000000'],
-          ['JE-00000005', '1010', '0.000000000', '644.035140000']
+          ['JE-00000005', '1010', '0.000000000', '644.035140000'],
+          ['JE-00000006', '1010', '0.000000000', '469.390000000'],
+          ['JE-00000008', '1010', '0.000000000', '9480.580000000']
         ],
         note: 'Cash postings tie back to GL entries — bank totals reconcile to GL cash.'
       },
@@ -429,7 +437,9 @@
         cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
         rows: [
           ['cust-001', 'CostQuest', 'Los Angeles', 'MI'],
-          ['cust-002', 'Healthline', 'Miami', 'AA']
+          ['cust-002', 'Healthline', 'Miami', 'AA'],
+          ['cust-003', 'Harris Corporation', 'Scottsdale', 'NC'],
+          ['cust-004', 'MarketSense', 'Washington', 'ID']
         ],
         note: 'Customer master — invoices and AR aging reference these ids.'
       },
@@ -437,7 +447,9 @@
         cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
         rows: [
           ['vend-001', 'Apextech LLC', 'Riverside', 'UT'],
-          ['vend-002', 'Construction Monitor LLC', 'Mesa', 'MN']
+          ['vend-002', 'Construction Monitor LLC', 'Mesa', 'MN'],
+          ['vend-003', 'Compliance and Risks', 'St. Petersburg', 'WV'],
+          ['vend-004', 'FlightView', 'Atlanta', 'MA']
         ],
         note: 'Vendor master — bills and AP aging reference these ids.'
       },
@@ -445,7 +457,9 @@
         cols: [{ l: 'entry_id' }, { l: 'amount', k: 'num' }, { l: 'sub_ledger_type' }],
         rows: [
           ['JE-00000004', '480.460000000', 'invoice'],
-          ['JE-00000012', '7309.660000000', 'invoice']
+          ['JE-00000012', '7309.660000000', 'invoice'],
+          ['JE-00000016', '3399.640000000', 'invoice'],
+          ['JE-00000018', '3928.830000000', 'invoice']
         ],
         note: 'Sub-ledger rows each reference an existing journal entry.'
       },
@@ -454,7 +468,9 @@
         cols: [{ l: 'account' }, { l: 'name' }, { l: 'debit', k: 'dr' }, { l: 'credit', k: 'cr' }],
         rows: [
           ['1010', 'Checking Account', '0.000000000', '188234.574775000'],
-          ['1100', 'Accounts Receivable', '0.000000000', '23156.520000000']
+          ['1100', 'Accounts Receivable', '0.000000000', '23156.520000000'],
+          ['1200', 'Inventory', '62790.300000000', '0.000000000'],
+          ['1510', 'Accumulated Depreciation', '0.000000000', '27668.700000000']
         ],
         note: 'Debit and credit totals per account — the whole trial balance ties out.'
       },
@@ -462,7 +478,9 @@
         cols: [{ l: 'section' }, { l: 'account' }, { l: 'name' }, { l: 'amount', k: 'num' }],
         rows: [
           ['asset', '1010', 'Checking Account', '-188234.574775000'],
-          ['asset', '1100', 'Accounts Receivable', '-23156.520000000']
+          ['asset', '1100', 'Accounts Receivable', '-23156.520000000'],
+          ['asset', '1200', 'Inventory', '62790.300000000'],
+          ['asset', '1510', 'Accumulated Depreciation', '-27668.700000000']
         ],
         note: 'Assets, liabilities, and equity as of period end.'
       },
@@ -470,7 +488,9 @@
         cols: [{ l: 'section' }, { l: 'account' }, { l: 'name' }, { l: 'amount', k: 'num' }],
         rows: [
           ['revenue', '4000', 'Sales Revenue', '63680.410000000'],
-          ['revenue', '4200', 'Interest Income', '25961.940000000']
+          ['revenue', '4200', 'Interest Income', '25961.940000000'],
+          ['total_revenue', '', '', '89642.350000000'],
+          ['expense', '5000', 'Cost of Goods Sold', '34830.390000000']
         ],
         note: 'P&L derived from GL revenue and expense accounts.'
       },
@@ -478,7 +498,9 @@
         cols: [{ l: 'party' }, { l: '0–30', k: 'num' }, { l: '31–60', k: 'num' }, { l: '61–90', k: 'num' }, { l: '91+', k: 'num' }],
         rows: [
           ['CostQuest', '2326.640000000', '0.000000000', '0.000000000', '0.000000000'],
-          ['Healthline', '3284.610000000', '0.000000000', '0.000000000', '0.000000000']
+          ['Healthline', '3284.610000000', '0.000000000', '0.000000000', '0.000000000'],
+          ['Harris Corporation', '11238.490000000', '0.000000000', '0.000000000', '0.000000000'],
+          ['MarketSense', '7769.390000000', '0.000000000', '0.000000000', '0.000000000']
         ],
         note: 'Receivables bucketed by age, per customer.'
       }
@@ -505,24 +527,51 @@
         else { balancedEl.hidden = true; }
       }
 
-      // Build table via DOM APIs (no innerHTML on data)
+      // Build an Excel-style sheet: column letters (A,B,C…), a row-number
+      // gutter, gridlines, and a bold field-name header row. DOM APIs only.
+      var ncols = data.cols.length;
       var table = document.createElement('table');
+      table.className = 'sheet';
 
+      // Column-letter strip: corner + A, B, C …
       var thead = document.createElement('thead');
-      var htr = document.createElement('tr');
-      for (var c = 0; c < data.cols.length; c++) {
-        var th = document.createElement('th');
-        th.textContent = data.cols[c].l;
-        if (thClass(data.cols[c].k)) th.className = thClass(data.cols[c].k);
-        htr.appendChild(th);
+      var letterRow = document.createElement('tr');
+      var corner = document.createElement('th');
+      corner.className = 'sheet__corner';
+      letterRow.appendChild(corner);
+      for (var c = 0; c < ncols; c++) {
+        var lth = document.createElement('th');
+        lth.className = 'sheet__letter';
+        lth.textContent = String.fromCharCode(65 + c);
+        letterRow.appendChild(lth);
       }
-      thead.appendChild(htr);
+      thead.appendChild(letterRow);
       table.appendChild(thead);
 
       var tbody = document.createElement('tbody');
+
+      // Row 1 — the field names, styled like a typed header row
+      var fieldRow = document.createElement('tr');
+      var fnum = document.createElement('th');
+      fnum.className = 'sheet__rownum';
+      fnum.textContent = '1';
+      fieldRow.appendChild(fnum);
+      for (var fc = 0; fc < ncols; fc++) {
+        var fcell = document.createElement('td');
+        fcell.className = 'sheet__field' + (data.cols[fc].k ? ' num' : '');
+        fcell.textContent = data.cols[fc].l;
+        fieldRow.appendChild(fcell);
+      }
+      tbody.appendChild(fieldRow);
+
+      // Data rows — numbered 2, 3, …
       for (var r = 0; r < data.rows.length; r++) {
         var tr = document.createElement('tr');
-        for (var ci = 0; ci < data.cols.length; ci++) {
+        var rn = document.createElement('th');
+        rn.className = 'sheet__rownum';
+        rn.textContent = String(r + 2);
+        tr.appendChild(rn);
+        for (var ci = 0; ci < ncols; ci++) {
           var td = document.createElement('td');
           td.textContent = data.rows[r][ci];
           var cls = tdClass(data.cols[ci].k);
