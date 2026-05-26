@@ -2,7 +2,7 @@
 
 ## What fauxbooks is
 
-A free, open-source command-line tool that generates synthetic financial datasets. Single binary, no dependencies, runs anywhere Go runs. Install with `go install github.com/fauxbooks/fbx/cmd/fbx@latest` or grab a release binary.
+A free, open-source command-line tool that generates synthetic financial datasets. Single binary, no dependencies, runs anywhere Go runs. Install with `go install github.com/humzakhan/fauxbooks/cmd/fbx@latest` or grab a release binary.
 
 Output is real-shaped accounting data: chart of accounts, general ledger, bank statements, invoices, bills, expense reports. All cross-referenced, all reconcilable, all reproducible from a seed.
 
@@ -84,15 +84,15 @@ No flag-memorization, no quoting, reproducible by seed.
 
 ## Roadmap
 
-**v0.1 (now):** core documents, CSV + JSONL, two bundles, `AGENTS.md`.
+**Shipped today:** the `gen`, `verify`, `convert`, and `mcp` subcommands; CSV, JSONL, XLSX, and PDF output; two built-in bundles plus YAML custom bundles and templates; derived financial reports.
 
-**v0.2+ (see `future.md`):** XLSX and PDF, derived statements (P&L, balance sheet, aging reports), MCP server, custom templates and bundles, official formats (OFX, UBL, NACHA, XBRL, …), payroll, multi-currency, tax lines.
+**On the roadmap (see [`../plans/roadmap.md`](../plans/roadmap.md)):** official formats (OFX, UBL, NACHA, XBRL, …), payroll, multi-currency, and tax lines.
 
-We ship v0.1 first and add from `future.md` based on what users actually ask for.
+We add from the roadmap based on what users actually ask for.
 
 ## Getting involved
 
-- Read `spec.md` and `thesis.md`.
+- Read [`thesis.md`](thesis.md) and the [contributor guide](../CONTRIBUTING.md).
 - Try it: `fbx gen monthly-close --seed 1 --out /tmp/fbx`.
 - File issues for missing document types or determinism failures.
 - PRs welcome.
