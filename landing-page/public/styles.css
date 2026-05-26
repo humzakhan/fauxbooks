@@ -498,9 +498,9 @@ body {
   padding-top: 0.7rem;
   border-top: 1px solid var(--hairline);
   font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.7rem;
-  line-height: 1.5;
-  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(26, 26, 24, 0.74);
   white-space: nowrap;
   overflow-x: auto;
 }
