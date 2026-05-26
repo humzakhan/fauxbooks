@@ -950,8 +950,21 @@ body {
   padding: 10px 16px;
   border-radius: 5px;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-arrow {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.btn--solid:hover .btn-arrow {
+  transform: translateX(2px);
 }
 
 .btn--solid {
