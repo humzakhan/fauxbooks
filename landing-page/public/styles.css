@@ -239,48 +239,6 @@ body {
   margin-top: 1.25rem;
 }
 
-/* Command block */
-.command {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border: 1px solid var(--hairline);
-  border-radius: 4px;
-  padding: 14px 18px;
-  margin: 2rem 0 0;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.45);
-}
-
-/* Command line (text portion) — scrolls independently */
-.command-line {
-  overflow-x: auto;
-  white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Blinking block caret after the command line */
-.command-line::after {
-  content: "▋";
-  color: var(--pine);
-  margin-left: 2px;
-  animation: blink 1.1s steps(1) infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .command-line::after {
-    animation: none;
-    opacity: 0;
-  }
-}
-
 /* Copy button */
 .copy-btn {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -303,16 +261,6 @@ body {
 .copy-btn.copied {
   color: var(--pine);
   border-color: var(--pine);
-}
-
-.prompt {
-  color: var(--accent);
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.cmd {
-  color: var(--ink);
 }
 
 /* ---------------------------------------------------------
