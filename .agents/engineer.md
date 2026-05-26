@@ -48,7 +48,7 @@ small volume.
 
 | Concern | Convention |
 |---|---|
-| Language | Go 1.24+. No CGo. Single static binary. |
+| Language | Go 1.22+. No CGo. Single static binary. |
 | Decimal arithmetic | `github.com/shopspring/decimal`. Never `float64` for any monetary value. |
 | Decimal serialization | Plain decimal text, exactly 9 fractional digits, no thousands separator, no scientific notation. E.g. `100.000000000`. Never `float64` JSON marshalling on a money column. |
 | RNG | `math/rand/v2` (PCG) via the `internal/rng/` wrapper. Never call `math/rand` (v1) or any unseeded source directly. Never use `crypto/rand` in the generation path. |
