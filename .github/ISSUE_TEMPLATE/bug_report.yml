@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a defect in fbx (wrong output, crash, or a determinism violation)
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. `fbx` is deterministic by design, so the most
+        useful reports include the exact command and the seed/period/bundle used —
+        that lets us reproduce byte-for-byte.
+  - type: input
+    id: version
+    attributes:
+      label: fbx version
+      description: Output of `fbx --version`.
+      placeholder: "v0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Exact command and flags
+      description: The full command you ran, including all flags.
+      placeholder: "fbx gen --seed 42 --period 2025 --volume medium --bundle smb --format csv"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected fbx to do.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What fbx actually did. Include exit code and any error message.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Architecture
+      options:
+        - amd64
+        - arm64
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Any relevant terminal output or generated files. This will be rendered as code, so no backticks needed.
+      render: shell
+    validations:
+      required: false

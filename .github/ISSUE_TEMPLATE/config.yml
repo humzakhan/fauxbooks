@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/humzakhan/fauxbooks/blob/main/SECURITY.md
+    about: Do not file security issues publicly. Follow the private reporting process in SECURITY.md.
+  - name: Questions and usage help
+    url: https://github.com/humzakhan/fauxbooks/blob/main/CONTRIBUTING.md#questions
+    about: For usage questions, see CONTRIBUTING.md or reach out at hello@humza.io.
