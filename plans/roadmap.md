@@ -5,25 +5,32 @@ Ideas deferred from v0.1. Nothing here is committed — each item ships only whe
 ## v0.2 candidates
 
 ### Derived reports
-P&L, balance sheet, cash flow, trial balance, AR aging, AP aging, customer statements, check register. All computable from the v0.1 GL; ship the rendering when someone wants it.
+~~P&L, balance sheet, cash flow, trial balance, AR aging, AP aging, customer statements, check register. All computable from the v0.1 GL; ship the rendering when someone wants it.~~
+**SHIPPED.** All eight derived report files ship in v0.2 (PR-V01 and PR-V02).
 
 ### XLSX output
-One sheet per document, decimals as text to preserve precision, streaming write via `excelize.StreamWriter`. Auto-split sheets at 1,048,576 rows.
+~~One sheet per document, decimals as text to preserve precision, streaming write via `excelize.StreamWriter`. Auto-split sheets at 1,048,576 rows.~~
+**SHIPPED.** `--format xlsx` ships in v0.2 (PR-V03). Auto-split at 1,048,576 rows is not yet implemented.
 
 ### PDF rendering
-Invoices, bills, bank statements, expense reports, financial statements. Pure-Go `gofpdf` for plain reports; consider Typst (vendored binary) for invoice/statement layouts requiring richer composition. Per-tenant branding via `--company-config`.
+~~Invoices, bills, bank statements, expense reports, financial statements. Pure-Go `gofpdf` for plain reports; consider Typst (vendored binary) for invoice/statement layouts requiring richer composition. Per-tenant branding via `--company-config`.~~
+**SHIPPED.** `--format pdf` ships in v0.2 (PR-V04) for the 8 derived financial report documents. Core ledger and master files are not rendered as PDF. `--company-config` is supported.
 
 ### `fbx verify`
-Standalone invariant checker against an existing directory. Runs the same checks the generator runs at write time. Useful for CI assertions over user-edited datasets.
+~~Standalone invariant checker against an existing directory. Runs the same checks the generator runs at write time. Useful for CI assertions over user-edited datasets.~~
+**SHIPPED.** `fbx verify <dir>` ships in v0.2 (PR-V05).
 
 ### `fbx convert`
-CSV ↔ XLSX ↔ JSONL conversion. Streaming, decimal-preserving. Skip if `csvkit` / `xsv` covers the need.
+~~CSV ↔ XLSX ↔ JSONL conversion. Streaming, decimal-preserving. Skip if `csvkit` / `xsv` covers the need.~~
+**SHIPPED.** `fbx convert --in <src> --out <dst>` ships in v0.2 (PR-V06). All six conversion directions supported.
 
 ### MCP server (`fbx mcp`)
-Stdio transport. Exposes typed tools: `fbx_gen`, `fbx_verify`, `fbx_docs_list`, `fbx_bundle_list`. Lets agentic harnesses invoke fauxbooks directly without shelling out. Defer until `AGENTS.md` proves insufficient.
+~~Stdio transport. Exposes typed tools: `fbx_gen`, `fbx_verify`, `fbx_docs_list`, `fbx_bundle_list`. Lets agentic harnesses invoke fauxbooks directly without shelling out. Defer until `AGENTS.md` proves insufficient.~~
+**SHIPPED.** `fbx mcp` ships in v0.2 (PR-V08).
 
 ### Custom bundles and templates (YAML)
-Today's bundles and templates are hardcoded. Open them up to YAML config when someone wants a business shape we don't ship.
+~~Today's bundles and templates are hardcoded. Open them up to YAML config when someone wants a business shape we don't ship.~~
+**SHIPPED.** `--bundle-config` and `--templates-config` ship in v0.2 (PR-V07).
 
 ## v0.3 candidates
 
