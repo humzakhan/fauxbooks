@@ -341,3 +341,8 @@ go test ./... -run TestGolden -update
 | [`docs/thesis.md`](docs/thesis.md) | All | Problem statement and design rationale. |
 | [`docs/product.md`](docs/product.md) | All | Product spec and audience. |
 | [`plans/roadmap.md`](plans/roadmap.md) | Developers | v0.3+ planned features and out-of-scope items. |
+
+## License
+
+This project is licensed under the MIT License.
+See [LICENSE](LICENSE) for details.
