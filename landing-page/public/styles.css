@@ -168,6 +168,17 @@ body {
   flex-shrink: 0;
 }
 
+.gh-arrow {
+  font-size: 0.9em;
+  opacity: 0.65;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.gh-link:hover .gh-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
+}
+
 /* ---------------------------------------------------------
    Hero
    --------------------------------------------------------- */
