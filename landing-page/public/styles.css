@@ -15,8 +15,11 @@
   --pine:     #1E6F44;   /* forest green — debits / "in the black" */
 
   /* Column layout — one source of truth */
-  --col-max:  680px;
+  --col-max:  780px;
   --col-pad:  clamp(24px, 5vw, 56px);
+
+  /* Consistent vertical rhythm between sections */
+  --section-y: clamp(40px, 5vh, 60px);
 }
 
 /* ---------------------------------------------------------
@@ -78,33 +81,33 @@ body {
 
 /* Per-band vertical rhythm */
 .top-band > .wrap {
-  padding-top: 48px;
+  padding-top: 40px;
   padding-bottom: 0;
 }
 
 .hero-band > .wrap {
-  padding-top: clamp(32px, 6vh, 64px);
-  padding-bottom: clamp(48px, 8vh, 72px);
+  padding-top: clamp(20px, 3vh, 32px);
+  padding-bottom: var(--section-y);
 }
 
 .features-band > .wrap {
-  padding-top: clamp(56px, 8vh, 88px);
-  padding-bottom: clamp(56px, 8vh, 88px);
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
 }
 
 .examples-band > .wrap {
-  padding-top: clamp(56px, 8vh, 80px);
-  padding-bottom: clamp(56px, 8vh, 80px);
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
 }
 
 .cta-band > .wrap {
-  padding-top: clamp(56px, 8vh, 88px);
-  padding-bottom: clamp(56px, 8vh, 88px);
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
 }
 
 .footer-band > .wrap {
-  padding-top: 48px;
-  padding-bottom: 48px;
+  padding-top: var(--section-y);
+  padding-bottom: 40px;
 }
 
 /* ---------------------------------------------------------
@@ -166,7 +169,7 @@ body {
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--ink);
-  margin-top: clamp(48px, 10vh, 80px);
+  margin-top: clamp(8px, 2vh, 16px);
 }
 
 /* Headline accent word — pine with animated draw-in underline */
@@ -575,13 +578,8 @@ body {
 /* ---------------------------------------------------------
    File explorer — interactive ./books/ browser
    --------------------------------------------------------- */
-/* Breakout container — the spreadsheet window is wider than the text column */
-.examples-wide {
-  width: min(940px, 94vw);
-  margin: 1.5rem auto 0;
-}
-
 .explorer {
+  margin-top: 1.5rem;
   border: 1px solid var(--hairline);
   border-radius: 8px;
   background: #fff;
@@ -628,7 +626,7 @@ body {
 .explorer__tree {
   border-right: 1px solid var(--hairline);
   padding: 12px 10px;
-  max-height: 460px;
+  max-height: 300px;
   overflow-y: auto;
   background: rgba(250, 248, 243, 0.5);
 }
@@ -715,7 +713,6 @@ body {
   flex: 1;
   overflow: auto;
   min-height: 0;
-  max-height: 460px;
 }
 
 /* Excel-style sheet */
@@ -1063,7 +1060,7 @@ body {
   }
 
   .headline {
-    margin-top: clamp(32px, 8vh, 56px);
+    margin-top: clamp(6px, 1.5vh, 12px);
   }
 
   .copy-btn {
