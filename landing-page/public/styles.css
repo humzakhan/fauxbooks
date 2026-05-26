@@ -790,11 +790,13 @@ body {
   line-height: 1.5;
 }
 
-/* Sexy custom scrollbars — scoped to the explorer scroll areas */
+/* Super-minimal custom scrollbars — both axes, scoped to the explorer.
+   6px rails, no track, a faint thumb that inset-clips off the edges so it
+   floats, and a soft pine on hover. */
 .explorer__tree::-webkit-scrollbar,
 .preview__table::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 .explorer__tree::-webkit-scrollbar-track,
@@ -806,19 +808,22 @@ body {
 
 .explorer__tree::-webkit-scrollbar-thumb,
 .preview__table::-webkit-scrollbar-thumb {
-  background: rgba(26, 26, 24, 0.22);
-  border-radius: 8px;
+  background: rgba(26, 26, 24, 0.16);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
 
 .explorer__tree::-webkit-scrollbar-thumb:hover,
 .preview__table::-webkit-scrollbar-thumb:hover {
-  background: var(--pine);
+  background: rgba(30, 111, 68, 0.55);
+  background-clip: padding-box;
 }
 
 .explorer__tree,
 .preview__table {
   scrollbar-width: thin;
-  scrollbar-color: rgba(26, 26, 24, 0.28) transparent;
+  scrollbar-color: rgba(26, 26, 24, 0.20) transparent;
 }
 
 @media (max-width: 620px) {
