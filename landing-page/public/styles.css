@@ -590,11 +590,12 @@ body {
 /* Caption under the explorer */
 .caption {
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: rgba(26, 26, 24, 0.72);
-  margin-top: 1rem;
-  line-height: 1.5;
-  max-width: 60ch;
+  line-height: 1.55;
+  max-width: 56ch;
+  margin: 1.5rem auto 0;
+  text-align: center;
 }
 
 .muted { color: var(--muted); }
