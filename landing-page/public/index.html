@@ -41,19 +41,19 @@
     <section class="band band--paper features-band">
       <div class="wrap features">
         <div class="feature">
-          <h3>deterministic</h3>
-          <p>same seed → same bytes, every OS</p>
-          <code class="feature__proof">sha256: run 1 == run 2 <span class="ok">✓</span></code>
-        </div>
-        <div class="feature">
           <h3>reconcilable</h3>
-          <p>Σ debits = Σ credits, every run</p>
+          <p>Σ debits = Σ credits in every entry, a ground truth your agents verify against.</p>
           <code class="feature__proof"><span class="dr">5,910.10</span> = <span class="cr">5,910.10</span> <span class="ok">✓</span></code>
         </div>
         <div class="feature">
-          <h3>single binary</h3>
-          <p>no CGo, no deps · csv · jsonl · xlsx</p>
-          <code class="feature__proof">$ ldd fbx → not a dynamic executable</code>
+          <h3>deterministic</h3>
+          <p>Same seed, byte-identical books on every OS. Reproducible evals.</p>
+          <code class="feature__proof">sha256: run 1 == run 2 <span class="ok">✓</span></code>
+        </div>
+        <div class="feature">
+          <h3>at scale</h3>
+          <p>A quick fixture or a full year of books, on demand. csv · jsonl · xlsx.</p>
+          <code class="feature__proof">--volume small · medium · large</code>
         </div>
       </div>
     </section>
