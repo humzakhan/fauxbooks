@@ -959,17 +959,95 @@ body {
 
 .footer {
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   line-height: 1.5;
 }
 
-.footer-band a {
+/* Multi-column footer: brand block + linked sections */
+.footer__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer__wordmark {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.footer__tagline {
+  margin-top: 0.5rem;
+  max-width: 34ch;
+  color: rgba(26, 26, 24, 0.6);
+  font-size: 0.82rem;
+}
+
+.footer__meta {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer__heading {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.footer__col a {
+  color: rgba(26, 26, 24, 0.72);
+  text-decoration: none;
+  font-size: 0.85rem;
+  width: fit-content;
+}
+
+.footer__col a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* Bottom bar — license + canonical link */
+.footer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.footer__bar a {
   color: var(--ink);
   text-decoration: none;
 }
 
-.footer-band a:hover {
+.footer__bar a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 620px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------------------------------------------------------
