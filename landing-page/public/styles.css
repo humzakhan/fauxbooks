@@ -985,22 +985,23 @@ body {
 
 .footer__wordmark {
   font-family: 'Newsreader', Georgia, serif;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: var(--ink);
 }
 
 .footer__tagline {
-  margin-top: 0.5rem;
-  max-width: 34ch;
-  color: rgba(26, 26, 24, 0.6);
-  font-size: 0.82rem;
+  margin-top: 0.65rem;
+  max-width: 42ch;
+  color: rgba(26, 26, 24, 0.66);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .footer__meta {
-  margin-top: 0.75rem;
+  margin-top: 0.9rem;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
 }
 
 .footer__col {
