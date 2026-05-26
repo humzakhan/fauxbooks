@@ -1,6 +1,6 @@
 # Architecture
 
-`fbx` is a single-pass, single-goroutine pipeline: seed → generate → check → write. Three flags drive a seeded RNG, which produces a deterministic event stream; each event expands through a hardcoded template into balanced journal lines; those lines project into GL, bank, and sub-ledger views held entirely in memory; four invariant checks run against the full in-memory dataset; only then does the write phase flush all files plus a manifest. No service boundary, no goroutines, no library API in v0.1.
+`fbx` is a single-pass, single-goroutine pipeline: seed → generate → check → write. Three flags drive a seeded RNG, which produces a deterministic event stream; each event expands through a hardcoded template into balanced journal lines; those lines project into GL, bank, and sub-ledger views held entirely in memory; four invariant checks run against the full in-memory dataset; only then does the write phase flush all files plus a manifest. The generation path remains single-goroutine (no goroutines under `internal/gen`). An MCP stdio entry point ships as `fbx mcp` alongside the core pipeline.
 
 ---
 
@@ -40,16 +40,18 @@ The full dataset lives in memory until all invariants pass. This is bounded by t
 
 ## Packages
 
-OVERVIEW.md §Build layout names 7 packages. This design uses **4**.
+OVERVIEW.md §Build layout names 7 packages. The shipped design uses **6**.
 
 | Path | Responsibility | Public surface | Why separate |
 |---|---|---|---|
-| `cmd/fbx` | Flag parse, progress bar, top-level orchestration, exit codes | `main` only | Entry point; the only place `time.Now()` is permitted (progress bar to stderr) |
+| `cmd/fbx` | Flag parse, subcommand dispatch, top-level orchestration, exit codes | `main` only | Entry point; the only place `time.Now()` is permitted (progress bar to stderr) |
 | `internal/gen` | CoA, RNG, event generation, template expansion, projection, bundle dispatch | `Run(Config) error`, `Config`, `Bundle` | All core domain logic; no file I/O |
 | `internal/invariant` | Four write-time checks; returns `InvariantError` | `Check(Dataset) error`, `InvariantError` | Isolated test seam for negative tests (deliberately broken `Dataset` values) |
-| `internal/writer` | CSV + JSONL streaming write, decimal formatting, manifest + SHA-256 | `Write(Dataset, Config) error`, `FormatDecimal(decimal.Decimal) string` | Isolates all file I/O and enforces format rules |
+| `internal/writer` | CSV, JSONL, XLSX, PDF streaming write, decimal formatting, manifest + SHA-256 | `Write(Dataset, Config) error`, `FormatDecimal(decimal.Decimal) string` | Isolates all file I/O and enforces format rules |
+| `internal/reader` | Dataset reader for verify and convert subcommands | `Read(dir string) (Dataset, error)` | Isolates read-path I/O; no dependency on gen |
+| `internal/report` | Derived financial reports (P&L, balance sheet, aging) | `Generate(Dataset) Reports` | Pure projection; no file I/O |
 
-Four packages instead of seven because: `rng` → merged into `gen` (one caller); `coa` → merged into `gen` (no external consumers); `templates` → merged into `gen` (pure functions, no state, no second implementation); `project` → merged into `gen` (pure function over `[]JournalEntry`, no independent test seam). The rationale for each merge is documented in `architecture/OVERVIEW.md` §Build layout alongside the original 7-package sketch.
+Four original packages instead of seven because: `rng` → merged into `gen` (one caller); `coa` → merged into `gen` (no external consumers); `templates` → merged into `gen` (pure functions, no state, no second implementation); `project` → merged into `gen` (pure function over `[]JournalEntry`, no independent test seam). The rationale for each merge is documented in `architecture/OVERVIEW.md` §Build layout alongside the original 7-package sketch.
 
 ---
 
@@ -146,7 +148,7 @@ Single goroutine throughout. Generation accumulates `[]Event`, then expands to `
 
 ## Bundles and templates
 
-Bundle dispatch and template functions are hardcoded Go in `internal/gen`. This is intentional: a hardcoded bundle is auditable, version-controlled, and cannot fail due to a missing or malformed config file. YAML bundles are roadmap-deferred to v0.2 (see `plans/roadmap.md`).
+Bundle dispatch and template functions are hardcoded Go in `internal/gen`. This is intentional: a hardcoded bundle is auditable, version-controlled, and cannot fail due to a missing or malformed config file. YAML custom bundles and templates also ship, allowing user-defined event mixes without recompilation (see `docs/usage.md` for details).
 
 - **Bundle** — a struct in `internal/gen` with fields: mix (event type distribution), volumeScale (row count multiplier per tier), stressTest (bool, enables the second injection pass and `truth.json` output for `recon-stress-test`).
 - **Template** — one function per EventType: takes an `Event` and a `CoAIndex`, returns `(JournalEntry, []JournalLine)`. Each function constructs balanced debit/credit legs by arithmetic — the entry is balanced by construction, not by post-hoc sum. Templates are the only place in the codebase where `JournalEntry` and `JournalLine` values are assembled.
@@ -187,21 +189,16 @@ Invariant unit tests must also verify the abort behavior: when `Check` returns a
 - `Writer` interface — one format implementation; the format switch lives in `writer.Write`, not behind an interface.
 - Streaming event generation via channel or iterator — `[]Event` accumulation is simpler at v0.1 volume and avoids goroutine coordination overhead.
 - Separate `internal/project` package — a pure function with no independent test seam; merging into `gen` does not weaken testability.
-- `fbx verify` subcommand in v0.1 — deferred to v0.2 per `plans/roadmap.md`; the invariant checker already validates at generation time.
+- `fbx verify` as a standalone verifier of arbitrary datasets — the invariant checker validates at generation time; `fbx verify` ships for post-hoc verification of previously-generated output.
 
 ---
 
-## Out of scope (v0.1)
+## Out of scope (roadmap)
 
-See `plans/roadmap.md` for the full phase schedule. Items explicitly deferred:
+See `plans/roadmap.md` for the full phase schedule. Items not yet shipped:
 
-- Derived reports: P&L, balance sheet, trial balance, aging reports (v0.2)
-- Output formats: XLSX, PDF (v0.2)
-- Subcommands: `fbx verify`, `fbx convert` (v0.2)
-- MCP server (`fbx mcp`) (v0.2)
-- Custom bundles via YAML (v0.2)
-- Official wire formats: OFX, NACHA, ISO 20022, UBL, PEPPOL, Factur-X (v0.3)
-- Multi-currency and FX (v0.3)
-- Tax lines, payroll (v0.3)
-- Parallel workers and streaming at 10⁷+ scale (v0.3)
-- Embeddable library API (v0.4)
+- Official wire formats: OFX, NACHA, ISO 20022, UBL, PEPPOL, Factur-X
+- Multi-currency and FX
+- Tax lines, payroll
+- Parallel workers and streaming at 10⁷+ scale
+- Embeddable library API
