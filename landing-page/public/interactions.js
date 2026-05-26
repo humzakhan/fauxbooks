@@ -400,7 +400,7 @@
           ['JE-00000002', '1010', '3477.180000000', '0.000000000'],
           ['JE-00000002', '1100', '0.000000000', '3477.180000000']
         ],
-        note: 'Each journal entry’s lines — debits and credits net to zero by construction.'
+        note: 'Debits and credits in every journal entry net to zero by construction.'
       },
       'journal_entries.csv': {
         cols: [{ l: 'entry_id' }, { l: 'description' }, { l: 'source_event_id' }],
@@ -420,7 +420,7 @@
           ['1020', 'Savings Account', 'asset', 'debit'],
           ['1030', 'Petty Cash', 'asset', 'debit']
         ],
-        note: 'Chart of accounts — every account code in the books resolves here.'
+        note: 'The chart of accounts that every account code in the books resolves to.'
       },
       'bank_statement.csv': {
         balanced: true,
@@ -431,7 +431,7 @@
           ['JE-00000006', '1010', '0.000000000', '469.390000000'],
           ['JE-00000008', '1010', '0.000000000', '9480.580000000']
         ],
-        note: 'Cash postings tie back to GL entries — bank totals reconcile to GL cash.'
+        note: 'Cash postings tie back to GL entries, so bank totals reconcile to GL cash.'
       },
       'customers.csv': {
         cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
@@ -441,7 +441,7 @@
           ['cust-003', 'Harris Corporation', 'Scottsdale', 'NC'],
           ['cust-004', 'MarketSense', 'Washington', 'ID']
         ],
-        note: 'Customer master — invoices and AR aging reference these ids.'
+        note: 'Customer master records that invoices and AR aging reference by id.'
       },
       'vendors.csv': {
         cols: [{ l: 'id' }, { l: 'name' }, { l: 'city' }, { l: 'state' }],
@@ -451,7 +451,7 @@
           ['vend-003', 'Compliance and Risks', 'St. Petersburg', 'WV'],
           ['vend-004', 'FlightView', 'Atlanta', 'MA']
         ],
-        note: 'Vendor master — bills and AP aging reference these ids.'
+        note: 'Vendor master records that bills and AP aging reference by id.'
       },
       'invoices.csv': {
         cols: [{ l: 'entry_id' }, { l: 'amount', k: 'num' }, { l: 'sub_ledger_type' }],
@@ -472,7 +472,7 @@
           ['1200', 'Inventory', '62790.300000000', '0.000000000'],
           ['1510', 'Accumulated Depreciation', '0.000000000', '27668.700000000']
         ],
-        note: 'Debit and credit totals per account — the whole trial balance ties out.'
+        note: 'Debit and credit totals per account, and the whole trial balance ties out.'
       },
       'balance-sheet.csv': {
         cols: [{ l: 'section' }, { l: 'account' }, { l: 'name' }, { l: 'amount', k: 'num' }],
