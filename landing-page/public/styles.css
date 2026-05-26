@@ -15,7 +15,7 @@
   --pine:     #1E6F44;   /* forest green — debits / "in the black" */
 
   /* Column layout — one source of truth */
-  --col-max:  780px;
+  --col-max:  920px;
   --col-pad:  clamp(24px, 5vw, 56px);
 
   /* Consistent vertical rhythm between sections */
