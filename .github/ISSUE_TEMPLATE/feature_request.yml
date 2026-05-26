@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         `fbx` is deterministic by design, and its scope is governed by
-        [`plans/roadmap.md`](../../plans/roadmap.md). Please check the roadmap
+        [`plans/roadmap.md`](https://github.com/humzakhan/fauxbooks/blob/main/plans/roadmap.md). Please check the roadmap
         before filing — your idea may already be planned.
   - type: textarea
     id: problem
