@@ -63,7 +63,7 @@ Four original packages instead of seven because: `rng` → merged into `gen` (on
 - Volume (string, tier selector)
 - Bundle (string, dispatch key)
 - OutDir (string, output destination)
-- Format (string, csv or jsonl)
+- Format (string, csv|jsonl|xlsx|pdf)
 
 **`Event`**
 - ID (string, stable within a run)
