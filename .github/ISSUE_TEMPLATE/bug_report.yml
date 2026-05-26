@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: fbx version
-      description: Output of `fbx --version`.
+      description: Output of `fbx version`.
       placeholder: "v0.1.0"
     validations:
       required: true
