@@ -843,41 +843,71 @@ body {
   /* stacks naturally */
 }
 
-/* Framed CTA card with a pine left-accent */
-.cta-card {
-  border: 1px solid var(--hairline);
-  border-left: 3px solid var(--pine);
-  border-radius: 8px;
-  background: rgba(30, 111, 68, 0.04);
-  padding: clamp(24px, 4vw, 40px);
-}
-
 .cta-title {
   font-family: 'Newsreader', Georgia, serif;
-  font-size: clamp(1.5rem, 4vw, 1.8rem);
+  font-size: clamp(2rem, 5.5vw, 3rem);
   font-weight: 400;
-  letter-spacing: -0.015em;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   color: var(--ink);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .cta-install {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
   font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--hairline);
-  border-radius: 5px;
-  display: inline-block;
-  padding: 8px 14px;
+  border-radius: 8px;
+  padding: 14px 16px;
   margin-bottom: 1.75rem;
+  max-width: 640px;
+  box-shadow: 0 1px 3px rgba(26, 26, 24, 0.05);
 }
 
 .cta-prompt {
   color: var(--accent);
   user-select: none;
   -webkit-user-select: none;
-  margin-right: 0.5em;
+  flex-shrink: 0;
+}
+
+/* Animated typewriter reveal of the install command (copy still gets full text) */
+.cta-typed {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cta-cmd {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: bottom;
+  width: 55ch;
+  border-right: 0.5em solid var(--pine);
+  animation: cta-type 1.9s steps(55, end) 0.4s both, cta-caret 0.9s step-end infinite;
+}
+
+@keyframes cta-type {
+  from { width: 0; }
+  to   { width: 55ch; }
+}
+
+@keyframes cta-caret {
+  50% { border-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-cmd {
+    width: auto;
+    animation: none;
+    border-right: 0;
+  }
 }
 
 .cta-actions {
