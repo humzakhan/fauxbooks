@@ -1,5 +1,9 @@
 # fauxbooks (fbx)
 
+[![CI](https://github.com/humzakhan/fauxbooks/actions/workflows/ci.yml/badge.svg)](https://github.com/humzakhan/fauxbooks/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.24%2B-00ADD8.svg)](go.mod)
+
 **fauxbooks** is an open-source Go CLI that generates deterministic, reconcilable synthetic
 double-entry accounting datasets. Each run produces a complete set of balanced financial files
 from a seeded event stream — GL, bank statement, sub-ledgers, financial reports. The same seed,
