@@ -1,0 +1,17 @@
+# Cloudflare Pages headers. Cloudflare already serves Brotli/HTTP-2/3.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+
+# Fonts are content-stable (fixed family/weight) — cache hard.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# CSS/JS have no content hash yet, so revalidate often but allow short cache.
+/styles.css
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/interactions.js
+  Cache-Control: public, max-age=3600, must-revalidate
