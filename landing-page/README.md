@@ -9,9 +9,9 @@ Plain static HTML/CSS/JS with no build step. The `public/` directory is served a
 ```
 landing-page/
   public/
-    index.html      # main page
-    styles.css      # styles
-    ascii-bg.js     # ascii background animation
+    index.html        # main page
+    styles.css        # styles
+    interactions.js   # copy, balance count-up, hero terminal, file explorer
   package.json
   wrangler.toml
   .gitignore
@@ -26,14 +26,21 @@ Install dependencies once:
 npm install
 ```
 
-Preview with Wrangler (matches Cloudflare Pages environment):
+Dev server with hot reload (auto-refreshes the browser on save):
 
 ```sh
 npm run dev
+# opens http://localhost:8788
+```
+
+Cloudflare-accurate preview with Wrangler (no hot reload):
+
+```sh
+npm run preview
 # open http://localhost:8788
 ```
 
-Fallback — plain static server, no Wrangler required:
+Fallback, plain static server with no extra deps:
 
 ```sh
 npm run serve
