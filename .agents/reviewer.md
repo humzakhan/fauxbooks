@@ -171,7 +171,6 @@ These patterns block merge until resolved.
 - Minor performance improvements that do not affect output correctness or determinism.
 - The choice of CoA size (50 vs. 200 accounts) — this is an open question in
   `architecture/OVERVIEW.md` §Open questions; do not reopen it in review.
-- The license choice (MIT vs. Apache-2.0) — same, listed as an open question.
 - Features explicitly listed in `plans/roadmap.md` as v0.2 or later: I do not request
   that they be pre-implemented, and I do not block a PR that omits them.
 
