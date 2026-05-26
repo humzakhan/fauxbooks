@@ -1,15 +1,13 @@
 # fauxbooks Architecture
 
-This tree is the technical architecture for fauxbooks. `OVERVIEW.md` is the canonical entry; subsystem docs and ADRs live below it.
+This tree is the technical architecture for fauxbooks. `OVERVIEW.md` is the canonical entry.
 
 ## Navigation
 
 | Path | What lives here |
 |---|---|
 | [`OVERVIEW.md`](OVERVIEW.md) | Canonical tech spec: stack, invariants, CLI, output format, determinism model |
-| [`architecture.md`](architecture.md) | v0.1 internal design: pipeline, packages, key types, error and memory model |
-| [`subsystems/`](subsystems/) | Per-package design docs (one per `internal/...` package). Populated as v0.1 packages land. |
-| [`adrs/`](adrs/) | Architecture Decision Records. ADR-0001 onward as decisions are made. |
+| [`architecture.md`](architecture.md) | Internal design: pipeline, packages, key types, error and memory model |
 
 ## Invariants at a glance
 
@@ -23,13 +21,15 @@ Five properties enforced at write time. Any failure exits non-zero and writes no
 | Sub-ledger referential integrity (Inv-4) | Every sub-ledger row references an existing journal entry | [`OVERVIEW.md`](OVERVIEW.md) §Invariants |
 | Determinism | Same seed + bundle + period + version → byte-identical output across runs, OSes, and architectures | [`OVERVIEW.md`](OVERVIEW.md) §Determinism |
 
-## Planned subsystem docs
+## Package summary
 
-One doc per package in the v0.1 design (see [`architecture.md`](architecture.md) §Packages for rationale on the 4-package layout). Each doc will be added when the package implementation begins.
+See [`architecture.md`](architecture.md) §Packages for the full package table and rationale.
 
-| Package | Scope | Status |
-|---|---|---|
-| `cmd/fbx` | CLI entry, flag parsing, top-level orchestration, exit codes | planned |
-| `internal/gen` | CoA, seeded RNG, event generation, template expansion, projection, bundle dispatch | planned |
-| `internal/invariant` | Write-time invariant checker — runs the four invariants before any file is written | planned |
-| `internal/writer` | CSV and JSONL streaming writers, decimal formatting, manifest + SHA-256 hashing | planned |
+| Package | Scope |
+|---|---|
+| `cmd/fbx` | CLI entry, subcommand dispatch, top-level orchestration, exit codes |
+| `internal/gen` | CoA, seeded RNG, event generation, template expansion, projection, bundle dispatch |
+| `internal/invariant` | Write-time invariant checker — runs the four invariants before any file is written |
+| `internal/writer` | CSV, JSONL, XLSX, PDF writers; decimal formatting; manifest + SHA-256 hashing |
+| `internal/reader` | Dataset reader for verify and convert subcommands |
+| `internal/report` | Derived financial reports (P&L, balance sheet, aging) |

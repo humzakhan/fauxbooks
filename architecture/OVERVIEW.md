@@ -29,7 +29,10 @@ A fifth invariant — byte-identical output across runs, OSes, and architectures
 ## CLI
 
 ```
-fbx gen <bundle>   --seed N --period YYYY-MM --out DIR [--format csv|jsonl]
+fbx gen <bundle>   --seed N --period YYYY-MM --out DIR [--format csv|jsonl|xlsx|pdf]
+fbx verify <dir>   verify a previously-generated dataset
+fbx convert <dir>  convert output to a different format
+fbx mcp            start the MCP stdio server
 fbx version
 ```
 
@@ -72,8 +75,10 @@ Every monetary column is decimal text with 9 fractional digits (e.g. `100.000000
 
 - **CSV** (default): RFC 4180, UTF-8, `\n` endings, streaming writer.
 - **JSONL**: one JSON object per line, decimals as strings.
+- **XLSX**: Excel workbook, one sheet per document type.
+- **PDF**: formatted report output.
 
-That's it for v0.1. XLSX, PDF, and the official formats (OFX, UBL, NACHA, etc.) are in [`future.md`](./future.md).
+Official wire formats (OFX, UBL, NACHA, XBRL, etc.) are roadmap items; see [`../plans/roadmap.md`](../plans/roadmap.md).
 
 ## Determinism
 
@@ -92,15 +97,13 @@ Same `--seed` + bundle + period + version → byte-identical output across runs,
 
 ## Agent integration
 
-Ships an `AGENTS.md` at the repo root. Any coding harness that runs shell commands (Claude Code, Codex, Cursor, Claude Desktop, Continue, …) can read it and translate natural-language requests into `fbx gen` calls. No MCP server in v0.1 — `AGENTS.md` alone covers the use case at one file's cost.
-
-MCP server is in [`future.md`](./future.md).
+Ships an `AGENTS.md` at the repo root. Any coding harness that runs shell commands (Claude Code, Codex, Cursor, Claude Desktop, Continue, …) can read it and translate natural-language requests into `fbx gen` calls. An MCP stdio server ships as `fbx mcp`, providing a structured interface for agent runtimes that support the Model Context Protocol.
 
 ## Tech stack
 
 | Concern | Choice |
 |---|---|
-| Language | Go 1.22+ |
+| Language | Go 1.24+ |
 | Decimal | `github.com/shopspring/decimal` |
 | RNG | `math/rand/v2` (PCG) |
 | Faker | `github.com/brianvoe/gofakeit/v7` |
@@ -116,25 +119,24 @@ No CGo. Single static binary. Cross-compiles to linux/macOS/windows × amd64/arm
 fauxbooks/
 ├── cmd/fbx/main.go
 ├── internal/
-│   ├── coa/         # Chart of accounts (built-in)
-│   ├── events/      # Event generation
-│   ├── templates/   # Hardcoded balanced-entry templates
-│   ├── project/     # GL + bank + sub-ledger projection
+│   ├── gen/         # CoA, RNG, events, templates, projection, bundle dispatch
 │   ├── invariant/   # Write-time checks
-│   ├── writer/      # CSV + JSONL
-│   └── rng/         # Seeded RNG
+│   ├── writer/      # CSV, JSONL, XLSX, PDF writers + manifest
+│   ├── reader/      # Dataset reader (used by verify/convert)
+│   └── report/      # Derived financial reports (P&L, balance sheet, aging)
 ├── testdata/golden/ # Determinism fixtures
 ├── AGENTS.md
-├── README.md
-└── spec.md, thesis.md, product.md, future.md
+└── README.md
 ```
 
-## Out of scope for v0.1 (see `future.md`)
+## Now shipped (was out of scope in early drafts)
 
-XLSX, PDF, official formats (OFX/UBL/NACHA/etc.), MCP server, custom templates, custom bundles, derived statements (P&L, balance sheet, aging reports), multi-currency, tax lines, payroll, parallel workers, sharding, `convert` command, separate `verify` command, database loading.
+XLSX, PDF, MCP server (`fbx mcp`), custom templates, custom bundles via YAML, derived financial statements (P&L, balance sheet, aging reports), `convert` subcommand, `verify` subcommand.
+
+## Out of scope (roadmap — see `../plans/roadmap.md`)
+
+Official wire formats (OFX/UBL/NACHA/XBRL/etc.), multi-currency, tax lines, payroll, parallel workers, sharding, database loading.
 
 ## Open questions
 
-1. License: MIT vs Apache-2.0. Apache-2.0 is safer for the formats work later; MIT is friendlier now.
-2. Default chart of accounts: 50 accounts or 200? Ship one, accept the trade-off.
-3. Repo namespace: `github.com/fauxbooks/fbx` proposed.
+1. Default chart of accounts: 50 accounts or 200? Ship one, accept the trade-off.

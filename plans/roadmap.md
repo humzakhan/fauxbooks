@@ -1,4 +1,4 @@
-# future.md
+# Roadmap
 
 Ideas deferred from v0.1. Nothing here is committed — each item ships only when a real user needs it. Listed roughly in the order I'd reach for them.
 
