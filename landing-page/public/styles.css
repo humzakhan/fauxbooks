@@ -1,0 +1,1098 @@
+/* =========================================================
+   fauxbooks — Ledger design language
+   Paper not screen. Ink not UI. One pen-stroke of accent.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Self-hosted fonts (latin woff2, font-display: swap).
+   Replaces the render-blocking third-party Google Fonts CSS.
+   --------------------------------------------------------- */
+@font-face { font-family: 'Newsreader'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/newsreader-400.woff2') format('woff2'); }
+@font-face { font-family: 'Newsreader'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/newsreader-500.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/inter-500.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/jbmono-400.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/jbmono-500.woff2') format('woff2'); }
+
+/* ---------------------------------------------------------
+   Tokens
+   --------------------------------------------------------- */
+:root {
+  --paper:    #FAF8F3;
+  --ink:      #1A1A18;
+  --muted:    #6B6862;
+  --hairline: #E6E2D8;
+  --accent:   #8C2F2A;   /* oxblood — credits / "in the red" */
+  --pine:     #1E6F44;   /* forest green — debits / "in the black" */
+
+  /* Column layout — one source of truth */
+  --col-max:  920px;
+  --col-pad:  clamp(24px, 5vw, 56px);
+
+  /* Consistent vertical rhythm between sections */
+  --section-y: clamp(40px, 5vh, 60px);
+}
+
+/* ---------------------------------------------------------
+   Reset & base
+   --------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   Band system — full-bleed section rows
+   --------------------------------------------------------- */
+.band {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* All bands share one column width and one horizontal padding.
+   Vertical padding is added per-band below. */
+.band > .wrap {
+  max-width: var(--col-max);
+  margin: 0 auto;
+  padding-left:  var(--col-pad);
+  padding-right: var(--col-pad);
+}
+
+/* Background modifiers — all bands show the paper body background */
+.band--paper {
+  background: transparent;
+}
+
+.band--ink {
+  background: transparent;
+}
+
+.band--pine {
+  background: transparent;
+}
+
+/* Per-band vertical rhythm */
+.top-band > .wrap {
+  padding-top: 40px;
+  padding-bottom: 0;
+}
+
+.hero-band > .wrap {
+  padding-top: clamp(20px, 3vh, 32px);
+  padding-bottom: var(--section-y);
+}
+
+.features-band > .wrap {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+
+.examples-band > .wrap {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+
+.cta-band > .wrap {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+
+.footer-band > .wrap {
+  padding-top: var(--section-y);
+  padding-bottom: 40px;
+}
+
+/* ---------------------------------------------------------
+   Hairline rule — separates paper sections
+   --------------------------------------------------------- */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 0 auto;
+  max-width: var(--col-max);
+  padding: 0 var(--col-pad);
+  box-sizing: content-box;
+}
+
+/* ---------------------------------------------------------
+   Masthead
+   --------------------------------------------------------- */
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wordmark {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.gh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 14px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.gh-link:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  text-decoration: none;
+}
+
+.gh-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.gh-arrow {
+  width: 12px;
+  height: 12px;
+  opacity: 0.75;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.gh-link:hover .gh-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
+}
+
+/* Diagonal external-link arrow (ghost button) */
+.ext-arrow {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.15s ease;
+}
+
+.btn--ghost:hover .ext-arrow {
+  transform: translate(1px, -1px);
+}
+
+/* ---------------------------------------------------------
+   Hero
+   --------------------------------------------------------- */
+.hero {
+  /* stacks naturally */
+}
+
+.headline {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-top: clamp(8px, 2vh, 16px);
+}
+
+/* Headline accent word — pine with animated draw-in underline */
+.hl-reconciles {
+  color: var(--pine);
+  background-image: linear-gradient(var(--pine), var(--pine));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  animation: underline-draw 700ms ease 300ms forwards;
+}
+
+@keyframes underline-draw {
+  to { background-size: 100% 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-reconciles {
+    animation: none;
+    background-size: 100% 2px;
+  }
+}
+
+/* [3] LEGIBILITY — subhead: was --muted (#6B6862), now clearly readable on paper */
+.subhead {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: rgba(26, 26, 24, 0.80);
+  max-width: 46ch;
+  margin-top: 1.25rem;
+}
+
+/* Copy button */
+.copy-btn {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.copy-btn:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
+.copy-btn.copied {
+  color: var(--pine);
+  border-color: var(--pine);
+}
+
+/* ---------------------------------------------------------
+   Animated terminal — hero panel
+   --------------------------------------------------------- */
+
+/* Outer panel — light, sits on paper, not a dark box */
+.terminal {
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.70);
+  box-shadow: 0 1px 3px rgba(26, 26, 24, 0.06), 0 4px 16px rgba(26, 26, 24, 0.04);
+  margin-top: 2rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.terminal:hover {
+  box-shadow: 0 2px 6px rgba(26, 26, 24, 0.09), 0 8px 24px rgba(26, 26, 24, 0.06);
+}
+
+/* Traffic-light dots titlebar */
+.terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px 7px;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(246, 244, 239, 0.80);
+}
+
+.terminal__bar span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hairline);
+}
+
+/* Body — monospace content area */
+.terminal__body {
+  padding: 14px 16px 18px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  min-height: 200px;
+  color: var(--ink);
+}
+
+/* Command line row */
+.terminal__cmdline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.terminal__prompt {
+  color: var(--accent);
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.terminal__typed {
+  color: var(--ink);
+  word-break: break-all;
+}
+
+/* Blinking block caret */
+.terminal__caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  background: var(--pine);
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: term-blink 1.1s steps(1) infinite;
+}
+
+@keyframes term-blink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Output area */
+.terminal__out {
+  margin-top: 0.25rem;
+}
+
+/* Each output line — fades + slides in via JS adding .visible */
+.terminal__line {
+  display: block;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal__line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Pine tick span within a line */
+.terminal__line .tick {
+  color: var(--pine);
+}
+
+/* File line: muted filename */
+.terminal__line--ok {
+  color: var(--muted);
+}
+
+/* Sum line */
+.terminal__line--sum {
+  color: var(--muted);
+}
+
+/* Balanced summary line — pine + bold */
+.terminal__line--balanced {
+  color: var(--pine);
+  font-weight: 500;
+}
+
+/* Spacer line */
+.terminal__line--spacer {
+  display: block;
+  height: 0.5em;
+  opacity: 1;
+  transform: none;
+}
+
+/* Reduced-motion: no caret blink, lines shown, no cursor */
+@media (prefers-reduced-motion: reduce) {
+  .terminal__caret {
+    animation: none;
+    display: none;
+  }
+
+  .terminal__line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .terminal {
+    cursor: default;
+  }
+}
+
+/* Responsive: terminal fits narrow viewports */
+@media (max-width: 480px) {
+  .terminal__body {
+    font-size: 0.78rem;
+    padding: 12px 13px 16px;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 360px) {
+  .terminal__body {
+    font-size: 0.72rem;
+    padding: 10px 11px 14px;
+  }
+}
+
+/* ---------------------------------------------------------
+   Features band — paper background
+   --------------------------------------------------------- */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 18px 18px 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(26, 26, 24, 0.05);
+}
+
+.features-band .feature h3 {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+/* All three markers pine — accent on paper */
+.feature:nth-child(1) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--pine);
+}
+
+.feature:nth-child(2) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--pine);
+}
+
+.feature:nth-child(3) h3::before {
+  content: "▪";
+  margin-right: 0.4rem;
+  color: var(--pine);
+}
+
+.features-band .feature p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(26, 26, 24, 0.72);
+  line-height: 1.5;
+  margin-bottom: 0.9rem;
+}
+
+/* Proof line — a small monospace "it's true" at the bottom of each card */
+.feature__proof {
+  display: block;
+  margin-top: auto;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--hairline);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(26, 26, 24, 0.74);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.feature__proof .ok {
+  color: var(--pine);
+  font-weight: 500;
+}
+
+@media (max-width: 620px) {
+  .features {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   Examples section — paper background
+   --------------------------------------------------------- */
+.examples {
+  /* stacks naturally */
+}
+
+.section-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+
+/* [3] LEGIBILITY — lede: was --muted (#6B6862), now rgba(26,26,24,0.72) */
+.lede {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: rgba(26, 26, 24, 0.72);
+  max-width: 52ch;
+  line-height: 1.55;
+  margin-bottom: 0.25rem;
+}
+
+/* GL column colouring — debit / credit (reused by explorer cells) */
+.dr { color: var(--pine); }
+.cr { color: var(--accent); }
+
+/* Caption under the explorer */
+.caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: rgba(26, 26, 24, 0.72);
+  line-height: 1.55;
+  max-width: 56ch;
+  margin: 1.5rem auto 0;
+  text-align: center;
+}
+
+.muted { color: var(--muted); }
+
+/* ---------------------------------------------------------
+   File explorer — interactive ./books/ browser
+   --------------------------------------------------------- */
+.explorer {
+  margin-top: 1.5rem;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(26, 26, 24, 0.07), 0 10px 34px rgba(26, 26, 24, 0.07);
+}
+
+/* Window chrome bar — Excel-style green title bar */
+.explorer__chrome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--pine);
+  color: #fff;
+}
+
+.explorer__app {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.explorer__grid-icon {
+  opacity: 0.9;
+  margin-right: 1px;
+}
+
+.explorer__count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.explorer__main {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+/* Left pane — file tree */
+.explorer__tree {
+  border-right: 1px solid var(--hairline);
+  padding: 12px 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(250, 248, 243, 0.5);
+}
+
+.tree__group { margin-bottom: 0.9rem; }
+.tree__group:last-child { margin-bottom: 0; }
+
+.tree__label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 0 8px;
+  margin-bottom: 0.3rem;
+}
+
+.tree__file {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tree__file:hover {
+  background: rgba(26, 26, 24, 0.04);
+  color: var(--ink);
+}
+
+.tree__file[aria-current="true"] {
+  background: rgba(30, 111, 68, 0.10);
+  color: var(--ink);
+  border-left-color: var(--pine);
+  font-weight: 500;
+}
+
+/* Right pane — spreadsheet preview */
+.explorer__preview {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+}
+
+/* Name / formula bar */
+.preview__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(250, 248, 243, 0.7);
+}
+
+.preview__name {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.preview__balanced {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.74rem;
+  color: var(--pine);
+  white-space: nowrap;
+}
+
+.preview__balanced[hidden] { display: none; }
+
+/* Scroll area — fills the window, both axes; sheet headers freeze here */
+.preview__table {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Excel-style sheet */
+.sheet {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  background: #fff;
+}
+
+.sheet th,
+.sheet td {
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  padding: 5px 14px;
+  white-space: nowrap;
+  text-align: left;
+  color: var(--ink);
+}
+
+/* Grey headers: the A/B/C letter strip, the row-number gutter, the corner */
+.sheet__letter,
+.sheet__corner,
+.sheet__rownum {
+  background: #f1efe9;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.66rem;
+  text-align: center;
+  padding: 3px 8px;
+}
+
+/* Freeze the column letters at the top while scrolling */
+.sheet thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Freeze the row-number gutter at the left while scrolling */
+.sheet__rownum {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 38px;
+}
+
+/* Corner stays pinned to both edges, above everything */
+.sheet thead .sheet__corner {
+  left: 0;
+  z-index: 3;
+  width: 38px;
+}
+
+/* Row 1 — bold field names */
+.sheet__field {
+  background: rgba(250, 248, 243, 0.85);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sheet .num { text-align: right; }
+.sheet .cell--dr { color: var(--pine); }
+.sheet .cell--cr { color: var(--accent); }
+
+.preview__note {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(26, 26, 24, 0.66);
+  padding: 11px 16px;
+  border-top: 1px solid var(--hairline);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Super-minimal custom scrollbars — both axes, scoped to the explorer.
+   6px rails, no track, a faint thumb that inset-clips off the edges so it
+   floats, and a soft pine on hover. */
+.explorer__tree::-webkit-scrollbar,
+.preview__table::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.explorer__tree::-webkit-scrollbar-track,
+.preview__table::-webkit-scrollbar-track,
+.explorer__tree::-webkit-scrollbar-corner,
+.preview__table::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.explorer__tree::-webkit-scrollbar-thumb,
+.preview__table::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 24, 0.16);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.explorer__tree::-webkit-scrollbar-thumb:hover,
+.preview__table::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 111, 68, 0.55);
+  background-clip: padding-box;
+}
+
+.explorer__tree,
+.preview__table {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(26, 26, 24, 0.20) transparent;
+}
+
+@media (max-width: 620px) {
+  .explorer__main { grid-template-columns: 1fr; }
+
+  .explorer__tree {
+    border-right: 0;
+    border-bottom: 1px solid var(--hairline);
+    max-height: 170px;
+  }
+
+  .preview__table { max-height: 320px; }
+}
+
+/* ---------------------------------------------------------
+   CTA band — paper background
+   --------------------------------------------------------- */
+.cta {
+  /* stacks naturally */
+}
+
+.cta-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: clamp(2rem, 5.5vw, 3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+
+.cta-install {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 1.75rem;
+  max-width: 640px;
+  box-shadow: 0 1px 3px rgba(26, 26, 24, 0.05);
+}
+
+.cta-prompt {
+  color: var(--accent);
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+/* Animated typewriter reveal of the install command (copy still gets full text) */
+.cta-typed {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cta-cmd {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: bottom;
+  width: 55ch;
+  border-right: 0.5em solid var(--pine);
+  animation: cta-type 1.9s steps(55, end) 0.4s both, cta-caret 0.9s step-end infinite;
+}
+
+@keyframes cta-type {
+  from { width: 0; }
+  to   { width: 55ch; }
+}
+
+@keyframes cta-caret {
+  50% { border-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-cmd {
+    width: auto;
+    animation: none;
+    border-right: 0;
+  }
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Shared button base */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-arrow {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.btn--solid:hover .btn-arrow {
+  transform: translateX(2px);
+}
+
+.btn--solid {
+  background: var(--pine);
+  color: var(--paper);
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.btn--solid:hover {
+  background: #185c38;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+}
+
+.btn--ghost:hover {
+  border-color: var(--muted);
+}
+
+/* ---------------------------------------------------------
+   Footer band — paper background
+   --------------------------------------------------------- */
+.footer-band {
+  color: rgba(26, 26, 24, 0.60);
+  text-align: left;
+}
+
+.footer {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* Multi-column footer: brand block + linked sections */
+.footer__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer__wordmark {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.footer__tagline {
+  margin-top: 0.65rem;
+  max-width: 42ch;
+  color: rgba(26, 26, 24, 0.66);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.footer__meta {
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer__heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(26, 26, 24, 0.62);
+  margin-bottom: 0.35rem;
+}
+
+/* Links carry a persistent faint underline so they read as links,
+   darkening on hover. */
+.footer__col a {
+  color: rgba(26, 26, 24, 0.78);
+  font-size: 0.85rem;
+  width: fit-content;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline);
+  text-underline-offset: 3px;
+  transition: color 0.12s ease, text-decoration-color 0.12s ease;
+}
+
+.footer__col a:hover {
+  color: var(--ink);
+  text-decoration-color: var(--ink);
+}
+
+/* Bottom bar — license + canonical link */
+.footer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.footer__bar a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.footer__bar a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 620px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------------------------------------------------------
+   Responsive — small screens
+   --------------------------------------------------------- */
+@media (max-width: 480px) {
+  .top-band > .wrap {
+    padding-top: 32px;
+  }
+
+  .hero-band > .wrap {
+    padding-bottom: clamp(40px, 7vh, 56px);
+  }
+
+  .headline {
+    margin-top: clamp(6px, 1.5vh, 12px);
+  }
+
+  .copy-btn {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+  }
+}
+
+@media (max-width: 360px) {
+  .copy-btn {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+}

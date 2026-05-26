@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>fauxbooks: synthetic financial data, at scale, that reconciles</title>
+    <meta name="description" content="A deterministic CLI that generates fully reconciled, double-entry financial datasets at scale, so long-running AI agents can work on realistic books and verify their own output.">
+    <link rel="preload" href="/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./interactions.js" defer></script>
+  </head>
+  <body>
+    <header class="band band--paper top-band">
+      <div class="wrap masthead">
+        <span class="wordmark">fauxbooks</span>
+        <a class="gh-link" href="https://github.com/humzakhan/fauxbooks" aria-label="View fauxbooks on GitHub">
+          <svg class="gh-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 014 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+          <svg class="gh-arrow" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.75 11.25 11.25 4.75"></path><path d="M6.25 4.75H11.25V9.75"></path></svg>
+        </a>
+      </div>
+    </header>
+
+    <section class="band band--paper hero-band">
+      <div class="wrap hero">
+        <h1 class="headline">Synthetic financial data, at scale,<br>that <span class="hl-reconciles">reconciles</span>.</h1>
+        <p class="subhead">A deterministic CLI that generates fully reconciled, double-entry financial datasets. Give your long-running AI agents realistic books to work on, and a ground truth to verify their own output against.</p>
+        <div class="terminal" id="hero-terminal" role="region" aria-label="live terminal demo" title="click to replay">
+          <div class="terminal__bar" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="terminal__body">
+            <div class="terminal__cmdline"><span class="terminal__prompt">$</span> <span class="terminal__typed" id="term-typed"></span><span class="terminal__caret" id="term-caret"></span></div>
+            <div class="terminal__out" id="term-out"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="band band--paper features-band">
+      <div class="wrap features">
+        <div class="feature">
+          <h3>reconcilable</h3>
+          <p>Σ debits = Σ credits in every entry, a ground truth your agents verify against.</p>
+          <code class="feature__proof"><span class="dr">5,910.10</span> = <span class="cr">5,910.10</span> <span class="ok">✓</span></code>
+        </div>
+        <div class="feature">
+          <h3>deterministic</h3>
+          <p>Same seed, byte-identical books on every OS. Reproducible evals.</p>
+          <code class="feature__proof">sha256: run 1 == run 2 <span class="ok">✓</span></code>
+        </div>
+        <div class="feature">
+          <h3>at scale</h3>
+          <p>A quick fixture or a full year of books, on demand. csv · jsonl · xlsx.</p>
+          <code class="feature__proof">--volume small · medium · large</code>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="band band--paper examples-band">
+      <div class="wrap examples">
+        <h2 class="section-title">Examples</h2>
+        <p class="lede">One run writes a complete double-entry close of 19 CSVs and a manifest.</p>
+
+        <div class="explorer" id="file-explorer">
+          <div class="explorer__chrome" aria-hidden="true">
+            <span class="explorer__app"><span class="explorer__grid-icon">▦</span> ./books/</span>
+            <span class="explorer__count">19 files + manifest.json</span>
+          </div>
+          <div class="explorer__main">
+            <nav class="explorer__tree" aria-label="Generated files, click to preview">
+              <div class="tree__group">
+                <p class="tree__label">ledger</p>
+                <button class="tree__file" type="button" data-file="gl.csv" aria-current="true">gl.csv</button>
+                <button class="tree__file" type="button" data-file="journal_entries.csv">journal_entries.csv</button>
+                <button class="tree__file" type="button" data-file="coa.csv">coa.csv</button>
+                <button class="tree__file" type="button" data-file="bank_statement.csv">bank_statement.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">masters</p>
+                <button class="tree__file" type="button" data-file="customers.csv">customers.csv</button>
+                <button class="tree__file" type="button" data-file="vendors.csv">vendors.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">sub-ledgers</p>
+                <button class="tree__file" type="button" data-file="invoices.csv">invoices.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">statements</p>
+                <button class="tree__file" type="button" data-file="trial-balance.csv">trial-balance.csv</button>
+                <button class="tree__file" type="button" data-file="balance-sheet.csv">balance-sheet.csv</button>
+                <button class="tree__file" type="button" data-file="profit-loss.csv">profit-loss.csv</button>
+              </div>
+              <div class="tree__group">
+                <p class="tree__label">reports</p>
+                <button class="tree__file" type="button" data-file="ar-aging.csv">ar-aging.csv</button>
+              </div>
+            </nav>
+            <div class="explorer__preview">
+              <div class="preview__head">
+                <span class="preview__name" id="exp-name">gl.csv</span>
+                <span class="preview__balanced" id="exp-balanced">Σ debits = Σ credits ✓</span>
+              </div>
+              <div class="preview__table" id="exp-table"></div>
+              <p class="preview__note" id="exp-note"></p>
+            </div>
+          </div>
+        </div>
+        <p class="caption">Real rows from a seeded run. Click any file. Decimals are exact strings (9 fractional digits), never floats. One run writes 19 CSVs plus <span class="muted">manifest.json</span> (seeds, row counts, SHA-256 per file).</p>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="band band--paper cta-band">
+      <div class="wrap cta">
+        <h2 class="cta-title">Reconcilable books,<br>in one command.</h2>
+        <div class="cta-install">
+          <span class="cta-prompt">$</span>
+          <span class="cta-typed"><span id="install-cmd" class="cta-cmd">go install github.com/humzakhan/fauxbooks/cmd/fbx@latest</span></span>
+          <button class="copy-btn" type="button" data-copy="install-cmd" aria-label="Copy install command">copy</button>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn--solid" href="https://github.com/humzakhan/fauxbooks">Get started <svg class="btn-arrow" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h10"></path><path d="M8.5 3.5 13 8l-4.5 4.5"></path></svg></a>
+          <a class="btn btn--ghost" href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">Read the docs <svg class="ext-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.75 11.25 11.25 4.75"></path><path d="M6.25 4.75H11.25V9.75"></path></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <footer class="band band--paper footer-band">
+      <div class="wrap footer">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <span class="footer__wordmark">fauxbooks</span>
+            <p class="footer__tagline">Fully reconciled, double-entry financial datasets at scale, a ground truth your AI agents can verify against.</p>
+            <p class="footer__meta">MIT License · © 2026</p>
+          </div>
+          <nav class="footer__col" aria-label="Docs">
+            <p class="footer__heading">Docs</p>
+            <a href="https://github.com/humzakhan/fauxbooks#readme">Quickstart</a>
+            <a href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">CLI &amp; usage</a>
+            <a href="https://github.com/humzakhan/fauxbooks/blob/main/docs/usage.md">MCP server</a>
+            <a href="https://github.com/humzakhan/fauxbooks/blob/main/AGENTS.md">Contributing</a>
+          </nav>
+          <nav class="footer__col" aria-label="Project">
+            <p class="footer__heading">Project</p>
+            <a href="https://github.com/humzakhan/fauxbooks">GitHub</a>
+            <a href="https://github.com/humzakhan/fauxbooks/issues">Issues</a>
+            <a href="https://github.com/humzakhan/fauxbooks/releases">Releases</a>
+            <a href="https://github.com/humzakhan/fauxbooks/blob/main/LICENSE">License</a>
+          </nav>
+        </div>
+        <div class="footer__bar">
+          <span>fauxbooks · MIT · © 2026</span>
+          <a href="https://github.com/humzakhan/fauxbooks">github.com/humzakhan/fauxbooks</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
