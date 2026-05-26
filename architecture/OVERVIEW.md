@@ -1,7 +1,7 @@
 # fauxbooks — architecture overview
 
 **fauxbooks v0.1** — synthetic financial data generator.
-Binary: `fbx`. Language: Go. License: MIT (TBD).
+Binary: `fbx`. Language: Go. License: MIT (see `LICENSE`).
 
 ## What it does
 
