@@ -1,4 +1,8 @@
-# fauxbooks (fbx)
+<p align="center">
+  <img src="docs/assets/fauxbooks-readme.png" alt="fauxbooks — synthetic financial data, at scale, that reconciles" width="100%" />
+</p>
+
+<hr />
 
 [![CI](https://github.com/humzakhan/fauxbooks/actions/workflows/ci.yml/badge.svg)](https://github.com/humzakhan/fauxbooks/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
